@@ -12,7 +12,7 @@ import java.util.logging.Level;
  * @version 1.0
  * @Create 2024/10/11 20:18
  */
-public class ArrayDeque<T> implements Iterable<T>{
+public class ArrayDeque<T> implements Iterable<T>, Deque<T>{
 
     public T[] items;
     private int size;
@@ -60,10 +60,8 @@ public class ArrayDeque<T> implements Iterable<T>{
         size++;
     }
 
-    //判空
-    public boolean isEmpty() {
-        return size == 0;
-    }
+    //判空 接口已有默认实现
+
 
     public int size() {
         return size;

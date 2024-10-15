@@ -89,13 +89,8 @@ public class LinkedListDeque<T> implements Iterable<T> {
         size++;
     }
 
-    //判空
-    public boolean isEmpty() {
-        if (size == 0) {
-            return true;
-        }
-        return false;
-    }
+    //判空 接口已有默认实现
+
 
     //容量
     public int size() {
