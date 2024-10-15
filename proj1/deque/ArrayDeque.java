@@ -29,7 +29,7 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T>{
     }
 
     //重新设置大小
-    private void resize(int newSize){
+    public void resize(int newSize){
         T[] a = (T[]) new Object[newSize];
         int currentFirst = (nextFirst + 1) % items.length;
         for (int i = 0; i < size; i++){
