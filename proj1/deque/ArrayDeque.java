@@ -1,6 +1,8 @@
 package deque;
 
 import java.lang.reflect.Array;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.logging.Level;
 
 /**
@@ -10,12 +12,12 @@ import java.util.logging.Level;
  * @version 1.0
  * @Create 2024/10/11 20:18
  */
-public class ArrayDeque<T> {
+public class ArrayDeque<T> implements Iterable<T>{
 
-    private T[] items;
+    public T[] items;
     private int size;
-    private int nextFirst; //下一个头部元素的坐标
-    private int nextLast; //下一个尾部元素的坐标
+    public int nextFirst; //下一个头部元素的坐标
+    public int nextLast; //下一个尾部元素的坐标
 
     public ArrayDeque()
     {
@@ -119,5 +121,61 @@ public class ArrayDeque<T> {
         }
         int actualIndex = (nextFirst + 1 + index) % items.length;
         return items[actualIndex];
+    }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof ArrayDeque)) {
+            return false;
+        }
+        if (o == this){
+            return true;
+        }
+
+        ArrayDeque<T> other = (ArrayDeque<T>) o;
+        if (size != other.size) {
+            return false;
+        }
+        int idx = (this.nextFirst + 1) % items.length;
+        int idx2 = (other.nextFirst + 1) % other.items.length;
+        for (int i = 0; i < size; i++) {
+            if (!this.items[idx].equals(other.items[idx2])) {
+                return false;
+            }
+            idx = (idx + 1) % items.length;
+            idx2 = (idx2 + 1) % other.items.length;
+        }
+
+        return true;
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new ArrayDequeIterator();
+    }
+
+    private class ArrayDequeIterator implements Iterator<T> {
+        private int current = (nextFirst + 1) % items.length;
+        private int i = 0; //已经迭代的元素数量
+
+
+        @Override
+        public boolean hasNext() {
+            return i < size;
+        }
+
+        @Override
+        public T next()  //无需显示的判断是否有next，调用者需要调用hasnext来检查的
+        {
+            if (!hasNext()) {
+                // 如果没有下一个元素，抛出异常
+                throw new NoSuchElementException();
+            }
+
+                T item = items[current];
+                current = (current + 1) % items.length;
+                i++;
+                return item;
+
+        }
     }
 }
