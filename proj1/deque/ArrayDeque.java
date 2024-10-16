@@ -120,6 +120,9 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T> {
     }
 
     public boolean equals(Object o) {
+        if (o == null){
+            return false;
+        }
         if (!(o instanceof ArrayDeque)) {
             return false;
         }
@@ -127,20 +130,16 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T> {
             return true;
         }
 
-        ArrayDeque<T> other = (ArrayDeque<T>) o;
+        ArrayDeque<?> other = (ArrayDeque<?>) o;
         if (size != other.size) {
             return false;
         }
-        int idx = (this.nextFirst + 1) % items.length;
-        int idx2 = (other.nextFirst + 1) % other.items.length;
+        
         for (int i = 0; i < size; i++) {
-            if (!this.items[idx].equals(other.items[idx2])) {
-                return false;
-            }
-            idx = (idx + 1) % items.length;
-            idx2 = (idx2 + 1) % other.items.length;
+          if (get(i) != other.get(i)) {
+              return false;
+          }
         }
-
         return true;
     }
 

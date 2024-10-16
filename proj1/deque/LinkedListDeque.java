@@ -22,7 +22,7 @@ public class LinkedListDeque<T> implements Iterable<T>, deque.Deque<T> {
         private Node next;
         private Node prev;
 
-        public Node(T i, Node next, Node prev) {
+        Node(T i, Node next, Node prev) {
             //根据值和前后节点构造节点
             this.item = i;
             this.next = next;
@@ -175,7 +175,7 @@ public class LinkedListDeque<T> implements Iterable<T>, deque.Deque<T> {
 
         @Override
         public boolean hasNext() {
-            return current != sentinel;
+            return size != 0 && current != sentinel;
         }
 
         @Override
@@ -192,25 +192,24 @@ public class LinkedListDeque<T> implements Iterable<T>, deque.Deque<T> {
 
     //判等
     public boolean equals(Object o) {
-        if (this == o){
+        if (this == o) {
             return true;
+        }
+        if (o == null){
+            return false;
         }
         if (!(o instanceof LinkedListDeque)) {
             return false;
         }
         //将o强制转换为linkedlistdeque
-        LinkedListDeque<T> other = (LinkedListDeque<T>) o;
+        LinkedListDeque<?> other = (LinkedListDeque<?>) o;
         if (size != other.size) {
             return false;
         }
-        Node current = sentinel.next;
-        Node otherCurrent = other.sentinel.next;
-        while (current != this.sentinel && otherCurrent != other.sentinel) {
-            if (!current.item.equals(otherCurrent.item)) {
+        for (int i = 0; i < size; i++) {
+            if (get(i) != other.get(i)) {
                 return false;
             }
-            current = current.next;
-            otherCurrent = otherCurrent.next;
         }
         return true;
     }

@@ -20,19 +20,7 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
     }
 
     public T max() {
-        if (this.isEmpty()) {
-            return null;
-        }
-        //主要是实现max函数，遍历这个数据结构，调用抽象的compare函数，找到最大的值
-        int idx = 0;
-        T maxe = this.get(idx);
-        for (int i = 0; i < size(); i++) {
-            idx = (idx + i);
-            if (comparator.compare(maxe, this.get(idx)) > 0) {
-                maxe = this.get(idx);
-            }
-        }
-        return maxe;
+        return max(comparator);
     }
 
 
@@ -48,20 +36,5 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
         }
         return maxe;
     }
-    public  boolean equals(Object o) {
-        // 可选实现 不做评分
-        if (o == null) {
-            return false;
-        }
-        if (o == this) {
-            return true;
-        }
-        if (!(o instanceof MaxArrayDeque)){
-            return false;
-        }
-        if (((MaxArrayDeque<?>) o).max() != max()){
-            return false;
-        }
-        return super.equals(o);
-    }
+
 }
