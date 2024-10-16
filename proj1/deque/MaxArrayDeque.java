@@ -13,7 +13,7 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> implements Comparator<T> {
 
     private Comparator<T> comparator;
 
-    public MaxArrayDeque(Comparator<T> c){
+    public MaxArrayDeque(Comparator<T> c) {
         super(); //调用父类的构造方法
         this.comparator = c;
 
@@ -24,32 +24,32 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> implements Comparator<T> {
         return 0;
     }
     public T max(){
-        if (this.isEmpty()){
+        if (this.isEmpty()) {
             return null;
         }
         //主要是实现max函数，遍历这个数据结构，调用抽象的compare函数，找到最大的值
-        int idx = (nextFirst + 1) % items.length;
-        T maxe = items[idx];
-        for (int i = 0; i < size(); i++){
-            idx = (idx + i) % items.length;
-            if (comparator.compare(maxe, items[idx]) > 0){
-                maxe = items[idx];
+        int idx = 0;
+        T maxe = this.get(idx);
+        for (int i = 0; i < size(); i++) {
+            idx = (idx + i);
+            if (comparator.compare(maxe, this.get(idx)) > 0){
+                maxe = this.get(idx);
             }
         }
         return maxe;
     }
 
 
-    public T max(Comparator<T> c){
+    public T max(Comparator<T> c) {
         if (this.isEmpty()){
             return null;
         }
-        int idx = (nextFirst + 1) % items.length;
-        T maxe = items[idx];
-        for (int i = 0; i < size(); i++){
-            idx = (idx + i) % items.length;
-            if (c.compare(items[idx], maxe) > 0){
-                maxe = items[idx];
+        int idx = 0;
+        T maxe = this.get(idx);
+        for (int i = 0; i < size(); i++) {
+            idx = (idx + i);
+            if (c.compare(this.get(idx), maxe) > 0){
+                maxe = this.get(idx);
             }
         }
         return maxe;

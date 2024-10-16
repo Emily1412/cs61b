@@ -1,9 +1,8 @@
 package deque;
 
-import java.lang.reflect.Array;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.logging.Level;
+
 
 /**
  * ClassName: ArrayDeque
@@ -12,15 +11,14 @@ import java.util.logging.Level;
  * @version 1.0
  * @Create 2024/10/11 20:18
  */
-public class ArrayDeque<T> implements Iterable<T>, Deque<T>{
+public class ArrayDeque<T> implements Iterable<T>, Deque<T> {
 
-    public T[] items;
+    private T[] items;
     private int size;
-    public int nextFirst; //下一个头部元素的坐标
+    private int nextFirst; //下一个头部元素的坐标
     public int nextLast; //下一个尾部元素的坐标
 
-    public ArrayDeque()
-    {
+    public ArrayDeque() {
         items = (T[]) new Object[8];
         size = 0;
         nextFirst = items.length - 1;
@@ -29,7 +27,7 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T>{
     }
 
     //重新设置大小
-    public void resize(int newSize){
+    private void resize(int newSize) {
         T[] a = (T[]) new Object[newSize];
         int currentFirst = (nextFirst + 1) % items.length;
         for (int i = 0; i < size; i++){
@@ -41,7 +39,7 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T>{
     }
 
     //头增
-    public void addFirst(T item){
+    public void addFirst(T item) {
         if (size == items.length){
             this.resize(size * 2);
         }
@@ -86,11 +84,11 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T>{
         nextFirst = (nextFirst + 1) % items.length;
         T x = items[nextFirst];
         items[nextFirst] = null; // 将这个位置置为空
-            size--;
-            if (size > 0 && size < items.length / 4){
-                this.resize(items.length / 4);
-            }
-            return x;
+        size--;
+        if (size > 0 && size < items.length / 4) {
+            this.resize(items.length / 4);
+        }
+        return x;
         }
 
 
