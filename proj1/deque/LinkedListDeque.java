@@ -191,26 +191,31 @@ public class LinkedListDeque<T> implements Iterable<T>, deque.Deque<T> {
 
 
     //判等
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (o == null){
+        if (!(o instanceof deque.Deque)) { // 检查是否实现了 Deque 接口
             return false;
         }
-        if (!(o instanceof LinkedListDeque)) {
+
+        deque.Deque<T> other = (deque.Deque<T>) o;
+
+        // 比较大小是否相同
+        if (this.size() != other.size()) {
             return false;
         }
-        //将o强制转换为linkedlistdeque
-        LinkedListDeque<?> other = (LinkedListDeque<?>) o;
-        if (size != other.size) {
-            return false;
-        }
-        for (int i = 0; i < size; i++) {
-            if (get(i) != other.get(i)) {
+
+        // 逐个元素比较
+        for (int i = 0; i < this.size(); i++) {
+            T item1 = this.get(i);
+            T item2 = other.get(i);
+            if (!item1.equals(item2)) {
                 return false;
             }
         }
         return true;
     }
+
 }
