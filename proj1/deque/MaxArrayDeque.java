@@ -9,7 +9,7 @@ import java.util.Comparator;
  * @version 1.0
  * @Create 2024/10/14 22:49
  */
-public class MaxArrayDeque<T> extends ArrayDeque<T> implements Comparator<T> {
+public class MaxArrayDeque<T> extends ArrayDeque<T> {
 
     private Comparator<T> comparator;
 
@@ -18,12 +18,8 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> implements Comparator<T> {
         this.comparator = c;
 
     }
-    @Override
-    public int compare(T o1, T o2) {
-        //暂时不重要，具体要根据情况更改？
-        return 0;
-    }
-    public T max(){
+
+    public T max() {
         if (this.isEmpty()) {
             return null;
         }
@@ -32,7 +28,7 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> implements Comparator<T> {
         T maxe = this.get(idx);
         for (int i = 0; i < size(); i++) {
             idx = (idx + i);
-            if (comparator.compare(maxe, this.get(idx)) > 0){
+            if (comparator.compare(maxe, this.get(idx)) > 0) {
                 maxe = this.get(idx);
             }
         }
@@ -41,17 +37,31 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> implements Comparator<T> {
 
 
     public T max(Comparator<T> c) {
-        if (this.isEmpty()){
+        if (this.isEmpty()) {
             return null;
         }
-        int idx = 0;
-        T maxe = this.get(idx);
+        T maxe = this.get(0);
         for (int i = 0; i < size(); i++) {
-            idx = (idx + i);
-            if (c.compare(this.get(idx), maxe) > 0){
-                maxe = this.get(idx);
+            if (c.compare(this.get(i), maxe) > 0) {
+                maxe = this.get(i);
             }
         }
         return maxe;
+    }
+    public  boolean equals(Object o) {
+        // 可选实现 不做评分
+        if (o == null) {
+            return false;
+        }
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof MaxArrayDeque)){
+            return false;
+        }
+        if (((MaxArrayDeque<?>) o).max() != max()){
+            return false;
+        }
+        return super.equals(o);
     }
 }

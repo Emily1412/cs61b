@@ -38,15 +38,6 @@ public class LinkedListDeque<T> implements Iterable<T>, deque.Deque<T> {
         sentinel = new Node(null, null, null); //初始化的时候哨兵节点应指向自己
         size = 0;
     }
-    public LinkedListDeque(T item) {
-        this(); // 调用无参构造函数，初始化哨兵节点
-        // 插入初始元素
-        Node newNode = new Node(item, sentinel, sentinel);
-        sentinel.next = newNode;
-        sentinel.prev = newNode;
-        size = 1;
-    }
-
 
 
     // 递归辅助函数
@@ -218,6 +209,8 @@ public class LinkedListDeque<T> implements Iterable<T>, deque.Deque<T> {
             if (!current.item.equals(otherCurrent.item)) {
                 return false;
             }
+            current = current.next;
+            otherCurrent = otherCurrent.next;
         }
         return true;
     }

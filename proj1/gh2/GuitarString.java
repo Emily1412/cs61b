@@ -1,6 +1,6 @@
 package gh2;
 
-// TODO: uncomment the following import once you're ready to start this portion
+
 import deque.ArrayDeque;
 import deque.Deque;
 
@@ -71,7 +71,7 @@ public class GuitarString {
 
     /* Return the double at the front of the buffer. */
     public double sample() {
-        if(!buffer.isEmpty()) {
+        if (!buffer.isEmpty()) {
             return buffer.get(0);
         }
         return 0;

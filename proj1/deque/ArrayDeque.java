@@ -16,7 +16,7 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T> {
     private T[] items;
     private int size;
     private int nextFirst; //下一个头部元素的坐标
-    public int nextLast; //下一个尾部元素的坐标
+    private int nextLast; //下一个尾部元素的坐标
 
     public ArrayDeque() {
         items = (T[]) new Object[8];
@@ -30,7 +30,7 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T> {
     private void resize(int newSize) {
         T[] a = (T[]) new Object[newSize];
         int currentFirst = (nextFirst + 1) % items.length;
-        for (int i = 0; i < size; i++){
+        for (int i = 0; i < size; i++) {
             a[i] = items[(currentFirst + i) % items.length];
         }
         items = a;
@@ -40,7 +40,7 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T> {
 
     //头增
     public void addFirst(T item) {
-        if (size == items.length){
+        if (size == items.length) {
             this.resize(size * 2);
         }
         items[nextFirst] = item;
@@ -50,7 +50,7 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T> {
 
     //尾增
     public void addLast(T item) {
-        if (size == items.length){
+        if (size == items.length) {
             this.resize(size * 2);
         }
         items[nextLast] = item;
@@ -78,7 +78,7 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T> {
     //头删
     public T removeFirst() {
 
-        if (size == 0){
+        if (size == 0) {
             return null;
         }
         nextFirst = (nextFirst + 1) % items.length;
@@ -89,24 +89,24 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T> {
             this.resize(items.length / 4);
         }
         return x;
-        }
+    }
 
 
     //尾删
     public T removeLast() {
 
-        if (size == 0){
+        if (size == 0) {
             return null;
         }
         nextLast = (nextLast - 1 + items.length) % items.length;
         T x = items[nextLast];
         items[nextLast] = null;
 
-            size--;
-        if (size > 0 && size < items.length / 4){
+        size--;
+        if (size > 0 && size < items.length / 4) {
             this.resize(items.length / 4);
         }
-            return x;
+        return x;
 
     }
 
@@ -123,7 +123,7 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T> {
         if (!(o instanceof ArrayDeque)) {
             return false;
         }
-        if (o == this){
+        if (o == this) {
             return true;
         }
 
@@ -160,17 +160,17 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T> {
         }
 
         @Override
-        public T next()  //无需显示的判断是否有next，调用者需要调用hasnext来检查的
-        {
+        public T next() {
+            //无需显示的判断是否有next，调用者需要调用hasnext来检查的
             if (!hasNext()) {
                 // 如果没有下一个元素，抛出异常
                 throw new NoSuchElementException();
             }
 
-                T item = items[current];
-                current = (current + 1) % items.length;
-                i++;
-                return item;
+            T item = items[current];
+            current = (current + 1) % items.length;
+            i++;
+            return item;
 
         }
     }
