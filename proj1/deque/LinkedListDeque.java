@@ -199,14 +199,11 @@ public class LinkedListDeque<T> implements Iterable<T>, deque.Deque<T> {
         if (!(o instanceof deque.Deque)) { // 检查是否实现了 Deque 接口
             return false;
         }
-
         deque.Deque<T> other = (deque.Deque<T>) o;
-
         // 比较大小是否相同
         if (this.size() != other.size()) {
             return false;
         }
-
         // 逐个元素比较
         for (int i = 0; i < this.size(); i++) {
             T item1 = this.get(i);
