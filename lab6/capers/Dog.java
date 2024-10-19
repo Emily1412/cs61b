@@ -5,12 +5,13 @@ import java.io.Serializable;
 import static capers.Utils.*;
 
 /** Represents a dog that can be serialized.
- * @author TODO
+ * @author Emily
 */
-public class Dog { // TODO
+//记得实现序列化接口
+public class Dog implements Serializable{
 
     /** Folder that dogs live in. */
-    static final File DOG_FOLDER = null; // TODO (hint: look at the `join`
+    static final File DOG_FOLDER = join(".capers","dogs"); // TODO (hint: look at the `join`
                                          //      function in Utils)
 
     /** Age of dog. */
@@ -38,9 +39,12 @@ public class Dog { // TODO
      * @param name Name of dog to load
      * @return Dog read from file
      */
+    //通过文件中的字节流读取狗
     public static Dog fromFile(String name) {
         // TODO (hint: look at the Utils file)
-        return null;
+        File f = join(DOG_FOLDER,name);
+        Dog d = readObject(f, Dog.class);
+        return d;
     }
 
     /**
@@ -55,8 +59,13 @@ public class Dog { // TODO
     /**
      * Saves a dog to a file for future use.
      */
+    //把狗变成字节流存到文件里 文件里是狗数组 所以在这个地方创建文件？
     public void saveDog() {
         // TODO (hint: don't forget dog names are unique)
+        //序列化对象 在这里不用，util里的writeObject已经替我们封装好了
+        File f = join(DOG_FOLDER, name);
+        //存到文件里
+        writeObject(f,this);
     }
 
     @Override
