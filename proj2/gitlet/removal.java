@@ -40,4 +40,25 @@ public class removal {
         }
     }
 
+    public static void clearRemovalArea() {
+        File[] f = REMOVAL_FOLDER.listFiles();
+        if (f != null) {
+            for (File file : f) {
+                if (file.isFile()){
+                    file.delete();
+                }
+            }
+        }
+    }
+
+    public static String[] allRemovalFiles(){
+        String[] fileNames = new String[REMOVAL_FOLDER.listFiles().length];
+        File[] files = REMOVAL_FOLDER.listFiles();
+        int i = 0;
+        for (File file : files) {
+            fileNames[i++] = file.getName();
+        }
+        return fileNames;
+    }
+
 }

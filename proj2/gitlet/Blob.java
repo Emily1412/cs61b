@@ -49,7 +49,16 @@ public class Blob implements Serializable {
     }
 
 
+
+    //判断两个文件的内容一不一样
     public String getSHA1(){
         return Utils.sha1(content);
+    }
+
+    public static String getSHA1ByFile(File file){
+        Blob b = new Blob(file);
+        byte[] thisByte = serialize(b);
+        String BolbSHA1 = sha1(thisByte);
+        return BolbSHA1;
     }
 }

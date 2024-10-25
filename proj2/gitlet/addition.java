@@ -30,7 +30,8 @@ public class addition {
         return false;
     }
 
-    static boolean sameSAH1(File f, String s1) {
+    //判断文件的内容一不一样
+    /*static boolean sameSAH1(File f, String s1) {
         File fileToCheck = new File(ADDITIONS_FOLDER, f.getName());
         if(fileToCheck.exists()) {
             Blob b = readObject(fileToCheck, Blob.class);
@@ -40,6 +41,7 @@ public class addition {
         }
         return false;
     }
+     */
 
     public static void remove(String filename) throws IOException {
         File f = new File(ADDITIONS_FOLDER, filename);
@@ -63,7 +65,38 @@ public class addition {
        Utils.writeContents(fileToAdd2,f.getName());
     }
 
+    public static String[] allAdditionFiles(){
+        String[] fileNames = new String[ADDITIONS_FOLDER.listFiles().length];
+        File[] files = ADDITIONS_FOLDER.listFiles();
+        int i = 0;
+        for (File file : files) {
+            fileNames[i++] = file.getName();
+        }
+        return fileNames;
+    }
 
+    public static void clearAdditionArea() {
+        File[] f = ADDITIONS_FOLDER.listFiles();
+        if (f != null) {
+            for (File file : f) {
+                if (file.isFile()){
+                    file.delete();
+                }
+            }
+        }
+        removeFileNames();
+    }
+
+    public static void removeFileNames(){
+        File[] f = FILENAME_FOLDER.listFiles();
+        if (f != null) {
+            for (File file : f) {
+                if (file.isFile()){
+                    file.delete();
+                }
+            }
+        }
+    }
 }
 
 

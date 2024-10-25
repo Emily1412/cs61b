@@ -1,15 +1,15 @@
 package gitlet;
 
 // TODO: any imports you need here
-import gitlet.Blob;
 
 import java.io.File;
-import gitlet.Utils;
 
 import java.io.Serializable;
 import java.time.Instant;
 
 import static gitlet.Utils.*;
+import java.util.HashSet;
+import java.util.SplittableRandom;
 // TODO: You'll likely use this in this class
 
 /** Represents a gitlet commit object.
@@ -31,14 +31,34 @@ public class Commit implements Serializable {
     static final File COMMIT_FOLDER = join(".gitlet","commits");
     private String message;
     private Instant commitTime;
-    private Blob[] blobsList; //顺序似乎不重要？好像是字典序
+    private static HashSet<String> blobsSet; //顺序似乎不重要？好像是字典序
 
-    private Blob[] parents;
-    public Commit(String message, Instant commitTime, Blob[] blobsList, Blob[] parents) {
+    private String[] parentsSHA1;
+
+    public Commit(){
+        message = "";
+        commitTime = Instant.now();
+        blobsSet = new HashSet<>();
+        parentsSHA1 = new String[2];
+    }
+
+    public Commit(String message, Instant commitTime, HashSet<String> blobsSet, String[] parents) {
         this.message = message;
         this.commitTime = commitTime;
-        this.blobsList  = blobsList;
-        this.parents = parents;
+        if (blobsSet == null) {
+            blobsSet = new HashSet<>();
+        }
+        else {
+            this.blobsSet  = blobsSet;
+        }
+        this.parentsSHA1 = parents;
+    }
+
+    public Commit(String message, Instant commitTime, String[] parents) {
+        this.message = message;
+        this.commitTime = commitTime;
+        this.parentsSHA1 = parents;
+        blobsSet = new HashSet<>();
     }
     public String getMessage() {
         return message;
@@ -46,12 +66,23 @@ public class Commit implements Serializable {
     public Instant getCommitTime() {
         return commitTime;
     }
-    public Blob[] getBlobsList() {
-        return blobsList;
+    public HashSet<String> getBlobsSet() {
+        return blobsSet;
+    }
+    public String[] getParentsSHA1() {
+        return parentsSHA1;
     }
 
-    public void addBlob(Blob b){
-        blobsList[blobsList.length]=b;
+    public  static String[] allBlobString(){
+        String[] BlobString = new String[blobsSet.size()];
+        int i = 0;
+        for (String item : blobsSet){
+            BlobString[i++] = item;
+        }
+        return BlobString;
+    }
+    public void addBlob(String blobName){
+        blobsSet.add(blobName);
     }
 
     public String saveCommit() {
@@ -61,6 +92,18 @@ public class Commit implements Serializable {
         File f = join(COMMIT_FOLDER, filename);
         writeObject(f, this);
         return filename;
+    }
+
+    public void removeBlob(String blobName){
+        blobsSet.remove(blobName);
+    }
+
+    public boolean ifExistsBlob(String blobName){
+        //一定要注意空指针访问问题
+        if (blobsSet == null){
+            return false;
+        }
+        return blobsSet.contains(blobName);
     }
 
 
