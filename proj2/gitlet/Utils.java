@@ -35,6 +35,7 @@ class Utils {
 
     /** Returns the SHA-1 hash of the concatenation of VALS, which may
      *  be any mixture of byte arrays and Strings. */
+    //通过字节码或者string生成哈希编码
     static String sha1(Object... vals) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
@@ -69,6 +70,7 @@ class Utils {
      *  if FILE was deleted, and false otherwise.  Refuses to delete FILE
      *  and throws IllegalArgumentException unless the directory designated by
      *  FILE also contains a directory named .gitlet. */
+    //按照文件删除指定的文件，但是需要包含.gitlet子目录
     static boolean restrictedDelete(File file) {
         if (!(new File(file.getParentFile(), ".gitlet")).isDirectory()) {
             throw new IllegalArgumentException("not .gitlet working directory");
@@ -84,6 +86,7 @@ class Utils {
      *  Returns true if FILE was deleted, and false otherwise.  Refuses
      *  to delete FILE and throws IllegalArgumentException unless the
      *  directory designated by FILE also contains a directory named .gitlet. */
+    //按照文件名删除文件
     static boolean restrictedDelete(String file) {
         return restrictedDelete(new File(file));
     }
@@ -93,6 +96,7 @@ class Utils {
     /** Return the entire contents of FILE as a byte array.  FILE must
      *  be a normal file.  Throws IllegalArgumentException
      *  in case of problems. */
+    //读文件把它变成字节流
     static byte[] readContents(File file) {
         if (!file.isFile()) {
             throw new IllegalArgumentException("must be a normal file");
@@ -107,6 +111,7 @@ class Utils {
     /** Return the entire contents of FILE as a String.  FILE must
      *  be a normal file.  Throws IllegalArgumentException
      *  in case of problems. */
+    //以字符读文件
     static String readContentsAsString(File file) {
         return new String(readContents(file), StandardCharsets.UTF_8);
     }
@@ -115,6 +120,7 @@ class Utils {
      *  creating or overwriting it as needed.  Each object in CONTENTS may be
      *  either a String or a byte array.  Throws IllegalArgumentException
      *  in case of problems. */
+    //将对象写入文件
     static void writeContents(File file, Object... contents) {
         try {
             if (file.isDirectory()) {
@@ -136,8 +142,10 @@ class Utils {
         }
     }
 
+
     /** Return an object of type T read from FILE, casting it to EXPECTEDCLASS.
      *  Throws IllegalArgumentException in case of problems. */
+    //从一个文件中读对象
     static <T extends Serializable> T readObject(File file,
                                                  Class<T> expectedClass) {
         try {
@@ -153,6 +161,7 @@ class Utils {
     }
 
     /** Write OBJ to FILE. */
+    //把对象写入一个文件
     static void writeObject(File file, Serializable obj) {
         writeContents(file, serialize(obj));
     }
@@ -160,6 +169,7 @@ class Utils {
     /* DIRECTORIES */
 
     /** Filter out all but plain files. */
+    //过滤除普通文件的其他文件
     private static final FilenameFilter PLAIN_FILES =
         new FilenameFilter() {
             @Override
@@ -171,6 +181,7 @@ class Utils {
     /** Returns a list of the names of all plain files in the directory DIR, in
      *  lexicographic order as Java Strings.  Returns null if DIR does
      *  not denote a directory. */
+    //按字典顺序返回目录中所有文件
     static List<String> plainFilenamesIn(File dir) {
         String[] files = dir.list(PLAIN_FILES);
         if (files == null) {
@@ -184,6 +195,7 @@ class Utils {
     /** Returns a list of the names of all plain files in the directory DIR, in
      *  lexicographic order as Java Strings.  Returns null if DIR does
      *  not denote a directory. */
+    //同上，但是是根据路径名字
     static List<String> plainFilenamesIn(String dir) {
         return plainFilenamesIn(new File(dir));
     }
@@ -191,15 +203,17 @@ class Utils {
     /* OTHER FILE UTILITIES */
 
     /** Return the concatentation of FIRST and OTHERS into a File designator,
-     *  analogous to the {@link java.nio.file.Paths.#get(String, String[])}
+     *  analogous to the {@link java.nio.file.Paths#get(String, String[])}
      *  method. */
+    //返回拼接的路径
     static File join(String first, String... others) {
         return Paths.get(first, others).toFile();
     }
 
     /** Return the concatentation of FIRST and OTHERS into a File designator,
-     *  analogous to the {@link java.nio.file.Paths.#get(String, String[])}
+     *  analogous to the {@link java.nio.file.Paths#get(String, String[])}
      *  method. */
+    //作用同上，但是第一个参数是文件路径
     static File join(File first, String... others) {
         return Paths.get(first.getPath(), others).toFile();
     }
@@ -208,6 +222,7 @@ class Utils {
     /* SERIALIZATION UTILITIES */
 
     /** Returns a byte array containing the serialized contents of OBJ. */
+    //将对象序列化成字节流
     static byte[] serialize(Serializable obj) {
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();

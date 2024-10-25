@@ -1,0 +1,220 @@
+This is a wug.
+
+import java.util.Scanner;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
+// 定义银行账户类，独立于Solution类
+public class Account {
+    private int id; // 账户ID
+    private double balance = 0; // 账户余额，默认为0
+    private double annualInterestRate; // 年利率
+    private LocalDateTime createDate; // 创建账户的日期
+
+    // 构造方法，用于初始化账户的id和年利率
+    public Account(int id, double annualInterestRate) {
+        this.id = id;
+        this.annualInterestRate = annualInterestRate;
+        this.createDate = LocalDateTime.now(); // 创建账户时自动记录当前时间
+    }
+
+    // 存钱方法，将指定金额存入账户
+    public void deposit(double amount) {
+        balance += amount;
+    }
+
+    // 取钱方法，从账户中取出指定金额
+    public void withDraw(double amount) {
+        if (amount <= balance) {
+            balance -= amount;
+        }
+    }
+
+    // 传递时间天数，计算利息并更新余额
+    public void passDays(int days) {
+        balance += balance * (annualInterestRate / 365) * days;
+    }
+
+    // 打印当前账户余额，保留两位小数
+    public void printBalance() {
+        System.out.printf("%.2f\n", balance);
+    }
+}
+
+// Solution 类负责执行逻辑
+public class Solution {
+    // 主执行方法，将逻辑放在此处，移除 main 函数
+    public void execute() {
+        Scanner in = new Scanner(System.in);
+        int operations = in.nextInt(); // 输入操作次数
+
+        // 创建账户，假设id=1，初始年利率为5%
+        Account account = new Account(1, 0.05);
+
+        for (int i = 0; i < operations; i++) {
+            int operationType = in.nextInt(); // 输入操作类型
+            double amount = in.nextDouble();  // 输入金额或天数
+
+            // 根据操作类型执行对应的账户操作
+            switch (operationType) {
+                case 0: // 存钱操作
+                    account.deposit(amount);
+                    break;
+                case 1: // 取钱操作
+                    account.withDraw(amount);
+                    break;
+                case 2: // 天数流逝，计算利息
+                    account.passDays((int) amount);
+                    break;
+                case 3: // 打印当前余额
+                    account.printBalance();
+                    break;
+                default:
+                    System.out.println("无效的操作类型");
+                    break;
+            }
+        }
+
+        in.close(); // 关闭输入流
+    }
+}
+import java.util.Scanner;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
+// 定义银行账户类，独立于Solution类
+public class Account {
+    private int id; // 账户ID
+    private double balance = 0; // 账户余额，默认为0
+    private double annualInterestRate; // 年利率
+    private LocalDateTime createDate; // 创建账户的日期
+
+    // 构造方法，用于初始化账户的id和年利率
+    public Account(int id, double annualInterestRate) {
+        this.id = id;
+        this.annualInterestRate = annualInterestRate;
+        this.createDate = LocalDateTime.now(); // 创建账户时自动记录当前时间
+    }
+
+    // 存钱方法，将指定金额存入账户
+    public void deposit(double amount) {
+        balance += amount;
+    }
+
+    // 取钱方法，从账户中取出指定金额
+    public void withDraw(double amount) {
+        if (amount <= balance) {
+            balance -= amount;
+        }
+    }
+
+    // 传递时间天数，计算利息并更新余额
+    public void passDays(int days) {
+        balance += balance * (annualInterestRate / 365) * days;
+    }
+
+    // 打印当前账户余额，保留两位小数
+    public void printBalance() {
+        System.out.printf("%.2f\n", balance);
+    }
+}
+
+// Solution 类负责执行逻辑
+public class Solution {
+    // 主执行方法，将逻辑放在此处，移除 main 函数
+    public void execute() {
+        Scanner in = new Scanner(System.in);
+        int operations = in.nextInt(); // 输入操作次数
+
+        // 创建账户，假设id=1，初始年利率为5%
+        Account account = new Account(1, 0.05);
+
+        for (int i = 0; i < operations; i++) {
+            int operationType = in.nextInt(); // 输入操作类型
+            double amount = in.nextDouble();  // 输入金额或天数
+
+            // 根据操作类型执行对应的账户操作
+            switch (operationType) {
+                case 0: // 存钱操作
+                    account.deposit(amount);
+                    break;
+                case 1: // 取钱操作
+                    account.withDraw(amount);
+                    break;
+                case 2: // 天数流逝，计算利息
+                    account.passDays((int) amount);
+                    break;
+                case 3: // 打印当前余额
+                    account.printBalance();
+                    break;
+                default:
+                    System.out.println("无效的操作类型");
+                    break;
+            }
+        }
+
+        in.close(); // 关闭输入流
+    }
+}
+import java.util.Scanner;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
+// 定义银行账户类，独立于Solution类
+public class Account {
+    private int id; // 账户ID
+    private double balance = 0; // 账户余额，默认为0
+    private double annualInterestRate; // 年利率
+    private LocalDateTime createDate; // 创建账户的日期
+
+    // 构造方法，用于初始化账户的id和年利率
+    public Account(int id, double annualInterestRate) {
+        this.id = id;
+        this.annualInterestRate = annualInterestRate;
+        this.createDate = LocalDateTime.now(); // 创建账户时自动记录当前时间
+    }
+
+    // 存钱方法，将指定金额存入账户
+    public void deposit(double amount) {
+        balance += amount;
+    }
+
+    // 取钱方法，从账户中取出指定金额
+    public void withDraw(double amount) {
+        if (amount <= balance) {
+            balance -= amount;
+        }
+    }
+
+    // 传递时间天数，计算利息并更新余额
+    public void passDays(int days) {
+        balance += balance * (annualInterestRate / 365) * days;
+    }
+
+    // 打印当前账户余额，保留两位小数
+    public void printBalance() {
+        System.out.printf("%.2f\n", balance);
+    }
+}
+
+// Solution 类负责执行逻辑
+public class Solution {
+    // 主执行方法，将逻辑放在此处，移除 main 函数
+    public void execute() {
+        Scanner in = new Scanner(System.in);
+        int operations = in.nextInt(); // 输入操作次数
+
+        // 创建账户，假设id=1，初始年利率为5%
+        Account account = new Account(1, 0.05);
+
+        for (int i = 0; i < operations; i++) {
+            int operationType = in.nextInt(); // 输入操作类型
+            double amount = in.nextDouble();  // 输入金额或天数
+
+            // 根据操作类型执行对应的账户操作
+            switch (operationType) {
+                case 0: // 存钱操作
+                    account.deposit(amount);
+                    break;
+                case 1: // 取钱操作
+                    account.withDraw(amount);
