@@ -50,7 +50,7 @@ public class addition implements Serializable {
     //判断文件的内容一不一样
 
 
-    public void remove(String filename) throws IOException {
+    public void remove(String filename) {
         if (additionFiles != null){
             additionFiles.remove(filename);
         }
@@ -58,7 +58,7 @@ public class addition implements Serializable {
     }
 
     //这里一定要记得第二个传整个文件名！！
-    public void addFile(File f, String name) throws IOException {
+    public void addFile(File f, String name) {
         //从f这里取哈希名，从name这里取文件名  好反直觉。。
         if (f != null){
             //文件名是主键，哈希值是值

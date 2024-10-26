@@ -28,13 +28,13 @@ public class removal implements Serializable {
         else return removalsFile.containsKey(fileName);
     }
 
-    public void remove(String fileName) throws IOException {
+    public void remove(String fileName) {
         if (removalsFile != null){
             removalsFile.remove(fileName);
         }
         saveRemovalArea();
     }
-    public void addFile(File f, String name) throws IOException {
+    public void addFile(File f, String name) {
         //从f这里取哈希名，从name这里取文件名  好反直觉。。
         if (f != null){
             removalsFile.put(name, f.getName());
@@ -42,7 +42,7 @@ public class removal implements Serializable {
         saveRemovalArea();
     }
 
-    public void addFile(String SHA1, String name) throws IOException {
+    public void addFile(String SHA1, String name) {
         //从f这里取哈希名，从name这里取文件名  好反直觉。。
         if (SHA1 != null && removalsFile != null){
             removalsFile.put(name, SHA1);
@@ -51,7 +51,7 @@ public class removal implements Serializable {
 
     }
 
-    public void clearRemovalArea() throws IOException {
+    public void clearRemovalArea() {
         removalsFile.clear();
         saveRemovalArea();
     }
@@ -78,7 +78,7 @@ public class removal implements Serializable {
         }
         return blobFileNames; //treemap已经按照字典序排好了！
     }
-    public void  saveRemovalArea() throws IOException {
+    public void  saveRemovalArea()  {
         File f = join(REMOVAL_FOLDER, "removalTreeMap");
         byte[] thisByte = serialize(this);
         writeObject(f, this);

@@ -74,7 +74,7 @@ public class Repository {
         File f = CURRENT_BRANCH;
         return readContentsAsString(f);
     }
-    public static void init() throws IOException {
+    public static void init() {
         //创建目录结构
         //commits & blobs
         if(GITLET_DIR.exists()){
@@ -116,7 +116,7 @@ public class Repository {
     }
 
     //将文件添加到暂存区 每次只加一个即可（这和真正的git不同）
-    public static void add(String fileName) throws IOException {
+    public static void add(String fileName) {
         if (!checkFolder()){
             System.err.println("There is no .Gitlet folder.");
             return;
@@ -168,7 +168,7 @@ public class Repository {
     }
 
     //处理commit,msg是信息
-    public static void commit(String msg) throws IOException {
+    public static void commit(String msg) {
         if (!checkFolder()){
             System.err.println("There is no .Gitlet folder.");
             return;
@@ -214,7 +214,7 @@ public class Repository {
     }
 
     //fileName是需要被删除的文件
-    public static void rm(String fileName) throws IOException {
+    public static void rm(String fileName) {
         //如果文件被暂存用于新增，`rm` 会将其从暂存区移除。
         //得到staging area 的addition区域
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
@@ -356,7 +356,7 @@ public class Repository {
 
     }
 
-    public static void WantedFileName(HashSet<String> blobNames, String WantedFileName) throws IOException {
+    public static void WantedFileName(HashSet<String> blobNames, String WantedFileName) {
         //blobnameset 反序列化 找这个文件
         for (String blobName : blobNames){
             File blobFile = join(BLOB_FOLDER, blobName);
@@ -367,13 +367,18 @@ public class Repository {
                 File wantedFile = join(PROJECT, WantedFileName);
                 byte[] content = thisBlob.getContent();
                 Utils.writeContents(wantedFile,content);
-                wantedFile.createNewFile();
+                try {
+                    wantedFile.createNewFile();
+                }
+                catch (IOException e){
+                    e.printStackTrace();
+                }
                 return;
             }
             System.out.println("File does not exist in that commit.");
         }
     }
-    public static void checkoutFile(String fileName) throws IOException {
+    public static void checkoutFile(String fileName)  {
         //从当前head里面取出来这个commit
         String headComName = getHead();
         File f = join(COMMIT_FOLDER, headComName);
@@ -386,7 +391,7 @@ public class Repository {
 
     }
 
-    public static void checkoutFileFromCommit(String commitID, String fileName) throws IOException {
+    public static void checkoutFileFromCommit(String commitID, String fileName) {
         // 反序列化这个commit
         File f = join(COMMIT_FOLDER, commitID);
         if (!f.exists()){

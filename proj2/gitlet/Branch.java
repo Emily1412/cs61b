@@ -36,7 +36,7 @@ public class Branch implements Serializable {
     public void removeCommits(int index) {
         commitsList.remove(index);
     }
-    public void addCommit(String commitName) throws IOException {
+    public void addCommit(String commitName) {
         //一定记得检查是否为空！！如果为空调用lastKey()会异常
         if (commitsList.isEmpty()){
             commitsList.put(0, commitName);
