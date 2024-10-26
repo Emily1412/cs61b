@@ -189,7 +189,7 @@ public class Repository {
         }
         adt.clearAdditionArea();
         //继承父commit中所有的blob
-        File commitFolder = join(COMMIT_FOLDER, parent);
+       /* File commitFolder = join(COMMIT_FOLDER, parent);
         Commit parentCommit = readObject(commitFolder, Commit.class);
         String parentSha1[] = parentCommit.allBlobString();
         if (parentSha1 != null){
@@ -197,7 +197,7 @@ public class Repository {
                 newCommit.addBlob(fileName); //设置成set很好的解决了重复性问题
             }
         }
-
+*/
         // 把removal里面存在的blob删除，并清空removal
         // 得到rmarea
         File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
