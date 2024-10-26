@@ -31,7 +31,7 @@ public class Commit implements Serializable {
     static final File COMMIT_FOLDER = join(".gitlet","commits");
     private String message;
     private Instant commitTime;
-    private static HashSet<String> blobsSet; //顺序似乎不重要？好像是字典序
+    private  HashSet<String> blobsSet; //顺序似乎不重要？好像是字典序
 
     private String[] parentsSHA1;
 
@@ -73,7 +73,10 @@ public class Commit implements Serializable {
         return parentsSHA1;
     }
 
-    public  static String[] allBlobString(){
+    public  String[] allBlobString(){
+        if (blobsSet == null) {
+            return null;
+        }
         String[] BlobString = new String[blobsSet.size()];
         int i = 0;
         for (String item : blobsSet){

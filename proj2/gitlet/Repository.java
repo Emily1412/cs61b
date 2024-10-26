@@ -3,6 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.time.format.DateTimeFormatter;
 import java.time.ZoneId;
@@ -31,7 +32,9 @@ public class Repository {
     /** The current working directory. */
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
-    public static final File PROJECT = new File(CWD, "gitlet");
+    public static final File PROJECT = CWD;
+    public static final File REMOVAL_FOLDER = join(".gitlet/staging_area","removals");
+    public static final File ADDITIONS_FOLDER = join(".gitlet/staging_area","additions");
     public static final File GITLET_DIR = join(CWD, ".gitlet");
 
     static final File COMMIT_FOLDER = join(".gitlet","commits");
@@ -39,6 +42,8 @@ public class Repository {
     static final File FILENAME_FOLDER = join(".gitlet/staging_area","fileNames");
 
     static final File HEAD = join(".gitlet","head.txt");
+
+    static final File CURRENT_BRANCH = join(".gitlet","currentBranch.txt");
 
     //是整个仓库的head (正处在的地方）
     private static String head;
@@ -56,10 +61,18 @@ public class Repository {
         writeContents(f,commitSHA1);
     }
 
+    static void saveCurrBranch(String branchName){
+        File f = CURRENT_BRANCH;
+        writeContents(f,branchName);
+    }
     static String getHead(){
         File f = HEAD;
         String headCommitSHA1 = readContentsAsString(f);
         return  headCommitSHA1;
+    }
+    static String getCurrentBranch(){
+        File f = CURRENT_BRANCH;
+        return readContentsAsString(f);
     }
     public static void init() throws IOException {
         //创建目录结构
@@ -76,10 +89,13 @@ public class Repository {
         //staging area
         File additionsFolder = new File(GITLET_DIR, "staging_area/additions");
         additionsFolder.mkdirs();
+        addition additionArea = new addition();
+        additionArea.saveAdditionArea();
         File removalsFolder = new File(GITLET_DIR, "staging_area/removals");
         removalsFolder.mkdirs();
-        File fileNames = new File(GITLET_DIR, "staging_area/fileNames");
-        fileNames.mkdirs();
+        removal removalArea = new removal();
+        removalArea.saveRemovalArea();
+
         //创建初始commit
         String msg = "initial commit";
         Instant time = Instant.ofEpochSecond(0);
@@ -96,6 +112,7 @@ public class Repository {
         //创建一个主分支
         Branch master = new Branch("master");
         master.addCommit(sha1Name);
+        saveCurrBranch("master");
     }
 
     //将文件添加到暂存区 每次只加一个即可（这和真正的git不同）
@@ -109,41 +126,40 @@ public class Repository {
         File file = new File(PROJECT, fileName);
         if(!file.exists()){
             System.err.println("File does not exist.");
+            return;
         }
 
         //先得到这个文件的blob
         Blob blob = new Blob(file);
         //blob需要写入文件
         String blobName = blob.saveBlob();
-        File f = new File(BLOB_FOLDER, blobName);
+        File f = new File(BLOB_FOLDER, blobName); //得到这个blob文件
+        //得到stagingarea
+        File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
+        removal rmval = readObject(rmvalFile, removal.class);
+        File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
+        addition adt = readObject(adtFile, addition.class);
+
         //取消已经标记为删除文件的暂存
-        if (removal.ifExists(f)){
-            removal.remove(f);
+        if (rmval.ifExists(fileName)){
+            rmval.remove(fileName);
             return;
         }
 
         //避免不必要的暂存
-        if (addition.ifExists(f)){
+        if (adt.ifExists(fileName) && adt.sameSHA1(fileName, blobName)){
             return;
         }
 
         //成功暂存，如果同一个文件已经被暂存了，暂存的新文件会覆盖旧文件
-        if (isDirectoryEmpty(FILENAME_FOLDER)){
-            addition.addFile(f,fileName);
+        if (adt.ifExists(fileName) && !adt.sameSHA1(fileName, blobName)){
+            adt.addFile(f,fileName);
             return;
         }
         else {
-            File SFN = join(FILENAME_FOLDER, fileName + ".txt");
-            if (SFN.exists()){
-                //说明暂存区已经有这个文件的blob了
-                //直接覆盖 SFN是之前存的文件
-                String thisSHA1 = readContentsAsString(SFN);
-                addition.remove(thisSHA1);
-                addition.addFile(f,fileName);
-                return;
-            }
+            adt.addFile(f,fileName);
         }
-        addition.addFile(f,blobName);
+
     }
     //检查staging area的文件是否为空
     public static boolean isDirectoryEmpty(File directory) {
@@ -152,7 +168,11 @@ public class Repository {
     }
 
     //处理commit,msg是信息
-    public static void commit(String msg) {
+    public static void commit(String msg) throws IOException {
+        if (!checkFolder()){
+            System.err.println("There is no .Gitlet folder.");
+            return;
+        }
         //创建一个新的commit with msg & time
         String[] parent;
         String head = getHead();
@@ -160,25 +180,33 @@ public class Repository {
         Commit newCommit = new Commit(msg, Instant.now(), parent);
 
         // 把addition的blob加入到commit blobset里面
-        String[] fileNames = addition.allAdditionFiles();
+        //得到additionArea
+        File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
+        addition adt = readObject(adtFile, addition.class);
+        String[] fileNames = adt.allAdditionFilesSHA1();
         for (String fileName : fileNames){
             newCommit.addBlob(fileName);
         }
-        addition.clearAdditionArea();
+        adt.clearAdditionArea();
         //继承父commit中所有的blob
         File commitFolder = join(COMMIT_FOLDER, parent);
         Commit parentCommit = readObject(commitFolder, Commit.class);
         String parentSha1[] = parentCommit.allBlobString();
-        for (String fileName : parentSha1){
-            newCommit.addBlob(fileName); //设置成set很好的解决了重复性问题
+        if (parentSha1 != null){
+            for (String fileName : parentSha1){
+                newCommit.addBlob(fileName); //设置成set很好的解决了重复性问题
+            }
         }
 
         // 把removal里面存在的blob删除，并清空removal
-        String[] rmFileNames = removal.allRemovalFiles();
+        // 得到rmarea
+        File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
+        removal rmval = readObject(rmvalFile, removal.class);
+        String[] rmFileNames = rmval.allRemovalFilesSHA1();
         for (String fileName : rmFileNames){
             newCommit.removeBlob(fileName);
         }
-        removal.clearRemovalArea();
+        rmval.clearRemovalArea();
 
         //commit持久化，移动头指针
        String ThisSHA1 = newCommit.saveCommit();
@@ -188,13 +216,15 @@ public class Repository {
     //fileName是需要被删除的文件
     public static void rm(String fileName) throws IOException {
         //如果文件被暂存用于新增，`rm` 会将其从暂存区移除。
-        System.out.println(fileName);
-        File SFN = join(FILENAME_FOLDER, fileName + ".txt");
-        if(SFN.exists()){
-            //说明他被暂存为新增
-            String thisSHA1 = readContentsAsString(SFN);
-            addition.remove(thisSHA1);
-            SFN.delete();
+        //得到staging area 的addition区域
+        File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
+        addition adt = readObject(adtFile, addition.class);
+        //SFN是当前工作目录下的这个文件本身（如果存在的话）
+        File SFN = join(PROJECT, fileName);
+        if (adt.ifExists(fileName)){
+            adt.remove(fileName);
+            adt.saveAdditionArea();
+            SFN.delete(); //是否需要？
             return;
         }
 
@@ -203,17 +233,18 @@ public class Repository {
         File head = HEAD;
         String headCommit = readContentsAsString(head);
         File thisCommitFile = join(COMMIT_FOLDER, headCommit);
+        //这个是当前commit
         Commit thisCommit = readObject(thisCommitFile, Commit.class);
 
-        File rmFile = join(PROJECT, fileName);
-
         //得到要删除文件的sha1
-        String rmFileSHA1 = Blob.getSHA1ByFile(rmFile);
+        String rmFileSHA1 = Blob.getSHA1ByFile(SFN);
         if (thisCommit.ifExistsBlob(rmFileSHA1)){
             thisCommit.removeBlob(rmFileSHA1);
-            File f = new File(rmFileSHA1);
-            removal.addFile(f);
-            rmFile.delete();
+            //得到staging area 的removalfile
+            File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
+            removal rmval = readObject(rmvalFile, removal.class);
+            rmval.addFile(rmFileSHA1,fileName);
+            SFN.delete();
         }
         else {
             System.err.println("No reason to remove the file");
@@ -222,17 +253,22 @@ public class Repository {
     }
 
     public static void printlog(Commit thisCom, String thisSHA1){
-        System.out.println("===");
-        System.out.println("commit " + thisSHA1);
+        System.out.print("===\n");  // 使用 \n 明确指定换行
+        System.out.print("commit " + thisSHA1 + "\n");
         Instant instant = thisCom.getCommitTime();
         ZonedDateTime zonedDateTime = instant.atZone(ZoneId.of("America/Los_Angeles"));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss yyyy Z", Locale.ENGLISH);
         String formattedDate = zonedDateTime.format(formatter);
-        System.out.println("Date: " + formattedDate);
-        System.out.println(thisCom.getMessage());
-        System.out.println();
+        System.out.print("Date: " + formattedDate + "\n");
+
+        System.out.print(thisCom.getMessage() + "\n");
+        System.out.print("\n");  // 确保日志输出的格式正确
     }
     public static void log() {
+        if (!checkFolder()){
+            System.err.println("There is no .Gitlet folder.");
+            return;
+        }
         //从当前这个commit开始从后往前输出信息直到initialCommit
         String headSHA1 = getHead();
         String thisSHA1 = headSHA1;
@@ -251,6 +287,10 @@ public class Repository {
     }
 
     public static void globalLog() {
+        if (!checkFolder()){
+            System.err.println("There is no .Gitlet folder.");
+            return;
+        }
         List<String> CommitFileNames = plainFilenamesIn(COMMIT_FOLDER);
         for (String fileName : CommitFileNames){
             File f = join(COMMIT_FOLDER, fileName);
@@ -260,4 +300,105 @@ public class Repository {
     }
 
 
+    public static void find(String msg) {
+        if (!checkFolder()){
+            System.err.println("There is no .Gitlet folder.");
+            return;
+        }
+        List<String> CommitFileNames = plainFilenamesIn(COMMIT_FOLDER);
+        for (String fileName : CommitFileNames){
+            File f = join(COMMIT_FOLDER, fileName);
+            Commit thisCom = readObject(f, Commit.class);
+            if (thisCom.getMessage().equals(msg)){
+                System.out.println(fileName);
+            }
+        }
+    }
+
+    //展示所有文件的状态 每个板块按照字典序排序
+    public static void status() {
+        System.out.println("=== Branches ===");
+        String thisBranch = getCurrentBranch();
+        List<String> BranchList = Branch.listBranch();
+        for (String branchName : BranchList){
+            if (branchName.equals(thisBranch)){
+                System.out.println("*" + branchName);
+            }
+            else System.out.println(branchName);
+        }
+        System.out.println();
+
+        System.out.println("=== Staged Files ===");
+        File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
+        addition adt = readObject(adtFile, addition.class);
+        String[] StageFiles = adt.allOrderedAdditionFiles();
+        if (StageFiles != null){
+            for (String fileName : StageFiles){
+                System.out.println(fileName);
+            }
+        }
+        System.out.println();
+
+        System.out.println("=== Removed Files ===");
+        File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
+        removal rmval = readObject(rmvalFile, removal.class);
+        String[] RmvalFiles = rmval.allOrderedRemovalFiles();
+        if (RmvalFiles != null) {
+            for (String fileName : RmvalFiles){
+                System.out.println(fileName);
+            }
+        }
+        System.out.println();
+
+        System.out.println("=== Modifications Not Staged For Commit ===");
+
+        System.out.println("=== Untracked Files ===");
+
+    }
+
+    public static void WantedFileName(HashSet<String> blobNames, String WantedFileName) throws IOException {
+        //blobnameset 反序列化 找这个文件
+        for (String blobName : blobNames){
+            File blobFile = join(BLOB_FOLDER, blobName);
+            Blob thisBlob = readObject(blobFile, Blob.class);
+
+            if (thisBlob.getFileName().equals(WantedFileName)){
+                //找到了就还原
+                File wantedFile = join(PROJECT, WantedFileName);
+                byte[] content = thisBlob.getContent();
+                Utils.writeContents(wantedFile,content);
+                wantedFile.createNewFile();
+                return;
+            }
+            System.out.println("File does not exist in that commit.");
+        }
+    }
+    public static void checkoutFile(String fileName) throws IOException {
+        //从当前head里面取出来这个commit
+        String headComName = getHead();
+        File f = join(COMMIT_FOLDER, headComName);
+        Commit headCom = readObject(f, Commit.class);
+
+        //从commit取出这个blobnameset
+        HashSet<String> blobNames = headCom.getBlobsSet();
+
+        WantedFileName(blobNames, fileName);
+
+    }
+
+    public static void checkoutFileFromCommit(String commitID, String fileName) throws IOException {
+        // 反序列化这个commit
+        File f = join(COMMIT_FOLDER, commitID);
+        if (!f.exists()){
+            System.out.println("No commit with that id exists.");
+        }
+        Commit thisCom = readObject(f, Commit.class);
+
+        //从commit取出这个blobnameset
+        HashSet<String> blobNames = thisCom.getBlobsSet();
+        WantedFileName(blobNames, fileName);
+    }
+
+    public static void checkoutBranch(String arg) {
+    }
 }

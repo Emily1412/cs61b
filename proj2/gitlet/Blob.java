@@ -24,7 +24,7 @@ public class Blob implements Serializable {
 
     static final File BLOB_FOLDER = join(".gitlet","blobs");
 
-    byte[] content;
+    private byte[] content;
     //以字节码形式保存文件内容，适用于各种类型的文件
 
     //不用生成单独的哈希字段了，因为无益于确定文件的唯一性，哈希码直接作为每个blob的名字即可
@@ -49,12 +49,18 @@ public class Blob implements Serializable {
     }
 
 
+    public byte[] getContent() {
+        return content;
+    }
 
     //判断两个文件的内容一不一样
     public String getSHA1(){
         return Utils.sha1(content);
     }
 
+    public String getFileName(){
+        return FileName;
+    }
     public static String getSHA1ByFile(File file){
         Blob b = new Blob(file);
         byte[] thisByte = serialize(b);

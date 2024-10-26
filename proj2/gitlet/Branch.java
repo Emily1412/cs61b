@@ -3,6 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
 import java.util.TreeMap;
 
 /**
@@ -48,5 +49,12 @@ public class Branch implements Serializable {
         File f = join(BRANCH_FOLDER, this.branchName);
         //新加入节点后要覆盖源文件
         writeObject(f,this);
+    }
+
+    public static List<String> listBranch(){
+        File f = BRANCH_FOLDER;
+
+        List<String> Branchlist = Utils.plainFilenamesIn(f);
+        return  Branchlist;
     }
 }

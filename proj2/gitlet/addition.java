@@ -2,14 +2,20 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 
-import static gitlet.Utils.join;
-import static gitlet.Utils.readObject;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
+
 import gitlet.Blob;
 import gitlet.Utils;
+
+import static gitlet.Utils.*;
+
 /**
  * ClassName: addition
  *
@@ -17,86 +23,84 @@ import gitlet.Utils;
  * @version 1.0
  * @Create 2024/10/23 21:41
  */
-public class addition {
+public class addition implements Serializable {
+    TreeMap<String, String> additionFiles = new TreeMap<>();
+
+    //创建示例对象 需要保存的！
+    public addition(){
+        additionFiles = new TreeMap<>();
+    }
 
     static final File ADDITIONS_FOLDER = join(".gitlet/staging_area","additions");
-    static final File FILENAME_FOLDER = join(".gitlet/staging_area","fileNames");
+
     //此处需判断文件名一致，且内容一致
-    static boolean ifExists(File f) {
-        File fileToCheck = new File(ADDITIONS_FOLDER, f.getName());
-        if (fileToCheck.exists()) {
-            return true;
-        }
-        return false;
+     boolean ifExists(String fileName) {
+         if (additionFiles == null){
+             return false;
+         }
+         else return additionFiles.containsKey(fileName);
     }
 
+    boolean sameSHA1(String fileName, String compareSHA1) {
+         if (additionFiles != null && additionFiles.containsKey(fileName)){
+             return compareSHA1.equals(additionFiles.get(fileName));
+         }
+         return false;
+    }
     //判断文件的内容一不一样
-    /*static boolean sameSAH1(File f, String s1) {
-        File fileToCheck = new File(ADDITIONS_FOLDER, f.getName());
-        if(fileToCheck.exists()) {
-            Blob b = readObject(fileToCheck, Blob.class);
-            if (b.getSHA1().equals(s1)){
-                return true;
+
+
+    public void remove(String filename) throws IOException {
+        if (additionFiles != null){
+            additionFiles.remove(filename);
+        }
+        saveAdditionArea();
+    }
+
+    //这里一定要记得第二个传整个文件名！！
+    public void addFile(File f, String name) throws IOException {
+        //从f这里取哈希名，从name这里取文件名  好反直觉。。
+        if (f != null){
+            //文件名是主键，哈希值是值
+            additionFiles.put(name, f.getName());
+        }
+        saveAdditionArea();
+    }
+
+
+    public String[] allAdditionFilesSHA1(){
+        if (additionFiles != null){
+            String[] blobFileNames = new String[additionFiles.size()];
+            int i = 0;
+            for (String fileName : additionFiles.keySet()){
+                blobFileNames[i++] = additionFiles.get(fileName);
             }
+            return blobFileNames;
         }
-        return false;
-    }
-     */
-
-    public static void remove(String filename) throws IOException {
-        File f = new File(ADDITIONS_FOLDER, filename);
-        if (ifExists(f)) {
-            if (!f.delete()){
-                System.out.println("Could not delete " + f.getName());
-            }
-        }
+        return null;
     }
 
-    public static void addFile(File f, String name) throws IOException {
-        File fileToAdd = new File(ADDITIONS_FOLDER, f.getName()); //只保存blob的名字就好
-        if (!ifExists(fileToAdd)) {
-            fileToAdd.createNewFile();
-        }
-       else {
-           System.out.println("File already exists");
-        }
-       File fileToAdd2 = join(FILENAME_FOLDER, name + ".txt");
-       fileToAdd2.createNewFile();
-       Utils.writeContents(fileToAdd2,f.getName());
-    }
-
-    public static String[] allAdditionFiles(){
-        String[] fileNames = new String[ADDITIONS_FOLDER.listFiles().length];
-        File[] files = ADDITIONS_FOLDER.listFiles();
+    public String[] allOrderedAdditionFiles(){
+        String[] blobFileNames = new String[additionFiles.size()];
         int i = 0;
-        for (File file : files) {
-            fileNames[i++] = file.getName();
-        }
-        return fileNames;
-    }
-
-    public static void clearAdditionArea() {
-        File[] f = ADDITIONS_FOLDER.listFiles();
-        if (f != null) {
-            for (File file : f) {
-                if (file.isFile()){
-                    file.delete();
-                }
+        if (additionFiles != null){
+            for (String fileName : additionFiles.keySet()){
+                blobFileNames[i++] = fileName;
             }
         }
-        removeFileNames();
+        return blobFileNames; //treemap已经按照字典序排好了！
     }
 
-    public static void removeFileNames(){
-        File[] f = FILENAME_FOLDER.listFiles();
-        if (f != null) {
-            for (File file : f) {
-                if (file.isFile()){
-                    file.delete();
-                }
-            }
-        }
+    public void clearAdditionArea() {
+        additionFiles.clear();
+        saveAdditionArea();
     }
+
+    public void saveAdditionArea() {
+        File f = join(ADDITIONS_FOLDER,"additionTreeMap");
+        writeObject(f, this);
+    }
+
 }
 
 

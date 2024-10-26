@@ -2,8 +2,10 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.TreeMap;
 
-import static gitlet.Utils.join;
+import static gitlet.Utils.*;
 
 /**
  * ClassName: removal
@@ -12,53 +14,73 @@ import static gitlet.Utils.join;
  * @version 1.0
  * @Create 2024/10/23 21:41
  */
-public class removal {
+public class removal implements Serializable {
     static final File REMOVAL_FOLDER = join(".gitlet/staging_area","removals");
-    public static boolean ifExists(File f) {
-        File fileToCheck = new File(REMOVAL_FOLDER, f.getName());
-        if (fileToCheck.exists()) {
-            return true;
+
+    TreeMap<String, String> removalsFile;
+    public removal(){
+        removalsFile = new TreeMap<>();
+    }
+    public boolean ifExists(String fileName) {
+        if (removalsFile == null){
+            return false;
         }
-        return false;
+        else return removalsFile.containsKey(fileName);
     }
 
-    public static void remove(File f) throws IOException {
-        if (ifExists(f)) {
-            File fileToDelete = new File(REMOVAL_FOLDER, f.getName());
-            if (!fileToDelete.delete()){
-                System.out.println("Could not delete " + f.getName());
+    public void remove(String fileName) throws IOException {
+        if (removalsFile != null){
+            removalsFile.remove(fileName);
+        }
+        saveRemovalArea();
+    }
+    public void addFile(File f, String name) throws IOException {
+        //从f这里取哈希名，从name这里取文件名  好反直觉。。
+        if (f != null){
+            removalsFile.put(name, f.getName());
+        }
+        saveRemovalArea();
+    }
+
+    public void addFile(String SHA1, String name) throws IOException {
+        //从f这里取哈希名，从name这里取文件名  好反直觉。。
+        if (SHA1 != null && removalsFile != null){
+            removalsFile.put(name, SHA1);
+        }
+        saveRemovalArea();
+
+    }
+
+    public void clearRemovalArea() throws IOException {
+        removalsFile.clear();
+        saveRemovalArea();
+    }
+
+    public String[] allRemovalFilesSHA1(){
+        if (removalsFile != null){
+            String[] fileNames = new String[removalsFile.size()];
+            int i = 0;
+            for (String fileName : removalsFile.keySet()) {
+                fileNames[i++] = removalsFile.get(fileName);
             }
+            return fileNames;
         }
-    }
-    public static void addFile(File f) throws IOException {
-        File fileToAdd = new File(REMOVAL_FOLDER, f.getName()); //只保存blob的名字就好
-        if (!ifExists(fileToAdd)) {
-            fileToAdd.createNewFile();
-        }
-        else {
-            System.out.println("File already exists");
-        }
+        return null;
     }
 
-    public static void clearRemovalArea() {
-        File[] f = REMOVAL_FOLDER.listFiles();
-        if (f != null) {
-            for (File file : f) {
-                if (file.isFile()){
-                    file.delete();
-                }
-            }
-        }
-    }
-
-    public static String[] allRemovalFiles(){
-        String[] fileNames = new String[REMOVAL_FOLDER.listFiles().length];
-        File[] files = REMOVAL_FOLDER.listFiles();
+    public String[] allOrderedRemovalFiles(){
+        String[] blobFileNames = new String[removalsFile.size()];
         int i = 0;
-        for (File file : files) {
-            fileNames[i++] = file.getName();
+        if (removalsFile != null){
+            for (String fileName : removalsFile.keySet()){
+                blobFileNames[i++] = fileName;
+            }
         }
-        return fileNames;
+        return blobFileNames; //treemap已经按照字典序排好了！
     }
-
+    public void  saveRemovalArea() throws IOException {
+        File f = join(REMOVAL_FOLDER, "removalTreeMap");
+        byte[] thisByte = serialize(this);
+        writeObject(f, this);
+    }
 }
