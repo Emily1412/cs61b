@@ -31,6 +31,8 @@ default:
 check:
 	@echo "Testing application gitlet.Main..."
 	$(TESTER) $(TESTER_FLAGS) $(TESTS)
+check_single:
+
 
 # 'make clean' will clean up stuff you can reconstruct.
 clean:

@@ -36,7 +36,6 @@ default:
 check: default
 	$(RMAKE) -C testing PYTHON=$(PYTHON) TESTER_FLAGS="$(TESTER_FLAGS)" check
 
-# 'make clean' will clean up stuff you can reconstruct.
 clean:
 	$(RM) *~
 	$(RMAKE) -C $(PACKAGE) clean
