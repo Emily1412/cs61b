@@ -92,8 +92,8 @@ public class addition implements Serializable {
     }
 
     public void clearAdditionArea() {
-        additionFiles.clear();
-        saveAdditionArea();
+         additionFiles.clear();
+         saveAdditionArea();
     }
 
     public void saveAdditionArea() {

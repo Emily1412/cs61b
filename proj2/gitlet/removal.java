@@ -84,7 +84,6 @@ public class removal implements Serializable {
     }
     public void  saveRemovalArea()  {
         File f = join(REMOVAL_FOLDER, "removalTreeMap");
-        byte[] thisByte = serialize(this);
         writeObject(f, this);
     }
 }

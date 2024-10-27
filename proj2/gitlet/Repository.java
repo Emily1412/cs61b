@@ -10,7 +10,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import static gitlet.Commit.*;
 import static gitlet.Utils.*;
+
 
 // TODO: any imports you need here
 
@@ -306,24 +308,12 @@ public class Repository {
             System.err.println("There is no .Gitlet folder.");
             return;
         }
-        File[] commitFolders = COMMIT_FOLDER.listFiles();
-        if (commitFolders != null) {
-            //枚举所有的内层folder
-            for (File folder : commitFolders) {
-                if (folder.isDirectory()) {
-                    // 列出子文件夹中的普通文件
-                    List<String> ThisFolderNames = plainFilenamesIn(folder);
-                    if (ThisFolderNames != null) {
-                        for (String fileName : ThisFolderNames) {
-                                // 将文件名添加到列表
-                            File f = join(COMMIT_FOLDER, folder.getName(), fileName);
-                            Commit thisCom = readObject(f, Commit.class);
-                            printlog(thisCom,fileName);
-                            }
-                        }
-                    }
-                }
-            }
+        List<String> allCommitNames = getAllCommitNames();
+        for (String commitName : allCommitNames) {
+            File f = join(COMMIT_FOLDER, commitName.substring(0,2), commitName);
+            Commit thisCom = readObject(f, Commit.class);
+            printlog(thisCom,commitName);
+        }
     }
 
 
@@ -332,28 +322,14 @@ public class Repository {
             System.err.println("There is no .Gitlet folder.");
             return;
         }
-
-        File[] commitFolders = COMMIT_FOLDER.listFiles();
-        if (commitFolders != null) {
-            //枚举所有的内层folder
-            for (File folder : commitFolders) {
-                if (folder.isDirectory()) {
-                    // 列出子文件夹中的普通文件
-                    List<String> ThisFolderNames = plainFilenamesIn(folder);
-                    if (ThisFolderNames != null) {
-                        for (String fileName : ThisFolderNames) {
-                            // 将文件名添加到列表
-                            File f = join(COMMIT_FOLDER, folder.getName(), fileName);
-                            Commit thisCom = readObject(f, Commit.class);
-                            if (thisCom.getMessage().equals(msg)){
-                                System.out.println(fileName);
-                            }
-                        }
-                    }
-                }
+        List<String> allCommitNames = getAllCommitNames();
+        for (String commitName : allCommitNames) {
+            File f = join(COMMIT_FOLDER, commitName.substring(0,2), commitName);
+            Commit thisCom = readObject(f, Commit.class);
+            if (thisCom.getMessage().equals(msg)){
+                System.out.println(commitName);
             }
         }
-
     }
 
     //展示所有文件的状态 每个板块按照字典序排序
@@ -394,6 +370,13 @@ public class Repository {
         System.out.println("=== Modifications Not Staged For Commit ===");
 
         System.out.println("=== Untracked Files ===");
+        String headSHA1 = getHead();
+        TreeSet<String> UtFs = UntrackedFileNames(headSHA1);
+        if (UtFs != null){
+            for (String fileName : UtFs){
+                System.out.println(fileName);
+            }
+        }
 
     }
 
@@ -500,5 +483,44 @@ public class Repository {
     }
 
 
-
+    //这个参数是目标的ID 别和当前headID搞混了
+    public static void reset(String CommitID) {
+        //不存在这个commit
+        if (!ifExistsCommit(CommitID)){
+            System.out.println("No commit with that id exists.");
+            return;
+        }
+        //有未跟踪的文件会被目标Commit所覆盖
+        TreeMap<String, String> desCommitBlobMap = getCommitBlobMap(CommitID);
+        //当前headID
+        String headSHA1 = getHead();
+        TreeSet<String> UtkedFileNames = UntrackedFileNames(headSHA1);
+        if (UtkedFileNames != null){
+            for (String fileName : UtkedFileNames){
+                if (desCommitBlobMap.containsKey(fileName)){
+                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                    return;
+                }
+            }
+        }
+        //删除不在目标commit但是已经追踪了的文件
+        TreeMap<String, String> thisCommitMap = getCommitBlobMap(headSHA1);
+        for (String fileName : thisCommitMap.keySet()){
+            if (!desCommitBlobMap.containsKey(fileName)){
+                File thisfile = join(PROJECT, fileName);
+                thisfile.delete();
+            }
+        }
+        //切换到指定的提交
+        checkoutFile(CommitID);
+        //移动head
+        saveHead(CommitID);
+        //清空暂存区
+        File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
+        removal rmval = readObject(rmvalFile, removal.class);
+        File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
+        addition adt = readObject(adtFile, addition.class);
+        adt.clearAdditionArea();
+        rmval.clearRemovalArea();
+    }
 }

@@ -13,6 +13,7 @@ import static gitlet.Utils.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.TreeSet;
 // TODO: You'll likely use this in this class
 
 /** Represents a gitlet commit object.
@@ -32,6 +33,7 @@ public class Commit implements Serializable {
 
     /** The message of this Commit. */
     static final File COMMIT_FOLDER = join(".gitlet","commits");
+    public static final File PROJECT = new File(System.getProperty("user.dir"));
     private String message;
     private Instant commitTime;
     private TreeMap<String, String> blobsmap;
@@ -137,6 +139,80 @@ public class Commit implements Serializable {
             }
         }
         return matchingCommit;
+    }
+
+    public static List<String> getAllCommitNames(){
+        List <String> allCommitNames = new ArrayList<>();
+        File[] commitFolders = COMMIT_FOLDER.listFiles();
+        if (commitFolders != null) {
+            //枚举所有的内层folder
+            for (File folder : commitFolders) {
+                if (folder.isDirectory()) {
+                    // 列出子文件夹中的普通文件
+                    List<String> ThisFolderNames = plainFilenamesIn(folder);
+                    if (ThisFolderNames != null) {
+                        for (String fileName : ThisFolderNames) {
+                            // 将文件名添加到列表
+                            allCommitNames.add(fileName);
+                        }
+                    }
+                }
+            }
+        }
+        return allCommitNames;
+    }
+
+    public static boolean ifExistsCommit(String filename) {
+        List <String> AllNames = getAllCommitNames();
+        if (AllNames == null){
+            return false;
+        }
+        return AllNames.contains(filename);
+    }
+
+    public static List<String> getAllWorkNames(){
+        List<String> AllNames = Utils.plainFilenamesIn(PROJECT);
+        AllNames.remove("Makefile");
+        AllNames.remove("pom.xml");
+        return AllNames;
+    }
+    public static boolean ifHasUntrackedFile(String CommitName) {
+        //得到当前工作目录中的所有文件
+        List<String> AllNames = getAllWorkNames();
+
+        TreeMap<String, String> blobsmap = getCommitBlobMap(CommitName);
+
+        //和当前这个commit里的blobmap进行比较
+        if (AllNames != null){
+            for (String fileName : AllNames) {
+                if (!blobsmap.containsKey(fileName)) {
+                    return true; //说明当前commit里面没有这个工作目录里的文件
+                }
+            }
+        }
+        return false; //当前工作目录为空或者所有文件都已经被追踪了
+    }
+
+    public static TreeMap<String, String> getCommitBlobMap(String CommitName) {
+        // 得到当前commit
+        File f = join(COMMIT_FOLDER, CommitName.substring(0,2),CommitName);
+        Commit thisCommit = readObject(f, Commit.class);
+        TreeMap<String, String> blobsmap = thisCommit.getBlobsMap();
+        return blobsmap;
+    }
+    public static TreeSet<String> UntrackedFileNames(String thisCommit) {
+        //得到工作目录文件
+        List<String> AllNames = getAllWorkNames();
+        //得到这个commit的blobMap
+        TreeMap<String, String> blobsmap = getCommitBlobMap(thisCommit);
+        TreeSet<String> UntrackedFileNames = new TreeSet<>();
+        //如果有工作目录中的文件不在这个commit里，就加入到结果集中
+        for (String fileName : AllNames) {
+            if (!blobsmap.containsKey(fileName)) {
+                UntrackedFileNames.add(fileName);
+            }
+        }
+        return UntrackedFileNames;
     }
     /* TODO: fill in the rest of this class. */
 }
