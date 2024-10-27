@@ -244,26 +244,26 @@ public class Repository {
         //待测试！！！！！！
         //如果文件被当前提交跟踪 (已经 commit)，`rm` 会在暂存区标记其为删除，并从工作目录中删除。
         File head = HEAD;
-        String headCommit = readContentsAsString(head);
+        TreeMap<String, String> headComBlobMap = getCommitBlobMap(getHead());
+        if (headComBlobMap.containsKey(fileName)){
+            File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
+            removal rmval = readObject(rmvalFile, removal.class);
+            rmval.addFile(headComBlobMap.get(fileName), fileName);
+            SFN.delete();
+        }
+
+        /*String headCommit = readContentsAsString(head);
         String first2 = headCommit.substring(0, 2);
         File thisCommitFilef = join(COMMIT_FOLDER, first2);
         File thisCommitFile = join(thisCommitFilef, headCommit);
         //这个是当前commit
         Commit thisCommit = readObject(thisCommitFile, Commit.class);
-
-        //得到要删除文件的sha1
-        String rmFileSHA1 = Blob.getSHA1ByFile(SFN);
-        if (thisCommit.ifExistsBlob(rmFileSHA1)){
-            thisCommit.removeBlob(fileName);
-            //得到staging area 的removalfile
-            File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
-            removal rmval = readObject(rmvalFile, removal.class);
-            rmval.addFile(rmFileSHA1,fileName);
-            SFN.delete();
-        }
+         */
         else {
             System.err.println("No reason to remove the file");
         }
+
+
         //如果文件既没有被暂存，也没有被跟踪，命令会返回错误消息：`No reason to remove the file`。
     }
 
