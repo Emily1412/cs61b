@@ -101,6 +101,10 @@ public class addition implements Serializable {
         writeObject(f, this);
     }
 
+    //得到整个map
+    public TreeMap<String, String> getTreeMap() {
+         return additionFiles;
+    }
 }
 
 

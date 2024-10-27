@@ -56,6 +56,10 @@ public class removal implements Serializable {
         saveRemovalArea();
     }
 
+    public TreeMap<String, String> getRemovalsFile() {
+        return removalsFile;
+    }
+
     public String[] allRemovalFilesSHA1(){
         if (removalsFile != null){
             String[] fileNames = new String[removalsFile.size()];

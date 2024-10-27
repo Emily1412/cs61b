@@ -8,8 +8,8 @@ import java.io.Serializable;
 import java.time.Instant;
 
 import static gitlet.Utils.*;
-import java.util.HashSet;
-import java.util.SplittableRandom;
+
+import java.util.TreeMap;
 // TODO: You'll likely use this in this class
 
 /** Represents a gitlet commit object.
@@ -31,25 +31,25 @@ public class Commit implements Serializable {
     static final File COMMIT_FOLDER = join(".gitlet","commits");
     private String message;
     private Instant commitTime;
-    private  HashSet<String> blobsSet; //顺序似乎不重要？好像是字典序
+    private TreeMap<String, String> blobsmap;
 
     private String[] parentsSHA1;
 
     public Commit(){
         message = "";
         commitTime = Instant.now();
-        blobsSet = new HashSet<>();
+        blobsmap = new TreeMap<>();
         parentsSHA1 = new String[2];
     }
 
-    public Commit(String message, Instant commitTime, HashSet<String> blobsSet, String[] parents) {
+    public Commit(String message, Instant commitTime, TreeMap<String, String> blobsmap, String[] parents) {
         this.message = message;
         this.commitTime = commitTime;
-        if (blobsSet == null) {
-            blobsSet = new HashSet<>();
+        if (blobsmap == null) {
+            blobsmap = new TreeMap<>();
         }
         else {
-            this.blobsSet  = blobsSet;
+            this.blobsmap  = blobsmap;
         }
         this.parentsSHA1 = parents;
     }
@@ -58,7 +58,7 @@ public class Commit implements Serializable {
         this.message = message;
         this.commitTime = commitTime;
         this.parentsSHA1 = parents;
-        blobsSet = new HashSet<>();
+        blobsmap = new TreeMap<>();
     }
     public String getMessage() {
         return message;
@@ -66,26 +66,27 @@ public class Commit implements Serializable {
     public Instant getCommitTime() {
         return commitTime;
     }
-    public HashSet<String> getBlobsSet() {
-        return blobsSet;
+    public TreeMap<String, String> getBlobsMap() {
+        return blobsmap;
     }
     public String[] getParentsSHA1() {
         return parentsSHA1;
     }
 
+    //得到所有blob的哈希值
     public  String[] allBlobString(){
-        if (blobsSet == null) {
+        if (blobsmap == null) {
             return null;
         }
-        String[] BlobString = new String[blobsSet.size()];
+        String[] BlobString = new String[blobsmap.size()];
         int i = 0;
-        for (String item : blobsSet){
-            BlobString[i++] = item;
+        for (String item : blobsmap.keySet()){
+            BlobString[i++] = blobsmap.get(item);
         }
         return BlobString;
     }
-    public void addBlob(String blobName){
-        blobsSet.add(blobName);
+    public void addBlob(String FileName,String blobname){
+        blobsmap.put(FileName,blobname);
     }
 
     public String saveCommit() {
@@ -97,16 +98,18 @@ public class Commit implements Serializable {
         return filename;
     }
 
-    public void removeBlob(String blobName){
-        blobsSet.remove(blobName);
+    public void removeBlob(String FileName){
+        if (blobsmap != null){
+            blobsmap.remove(FileName);
+        }
     }
 
-    public boolean ifExistsBlob(String blobName){
+    public boolean ifExistsBlob(String FileName){
         //一定要注意空指针访问问题
-        if (blobsSet == null){
+        if (blobsmap == null){
             return false;
         }
-        return blobsSet.contains(blobName);
+        return blobsmap.containsKey(FileName);
     }
 
 

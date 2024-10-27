@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Locale;
+import java.util.TreeMap;
 
 import static gitlet.Utils.*;
 
@@ -183,27 +184,33 @@ public class Repository {
         //得到additionArea
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
         addition adt = readObject(adtFile, addition.class);
-        String[] fileNames = adt.allAdditionFilesSHA1();
-        for (String fileName : fileNames){
-            newCommit.addBlob(fileName);
+        TreeMap<String,String> treeMap = adt.getTreeMap();
+        //直接copy
+        for (String fileName : treeMap.keySet()){
+            newCommit.addBlob(fileName, treeMap.get(fileName));
         }
         adt.clearAdditionArea();
-        //继承父commit中所有的blob
-       /* File commitFolder = join(COMMIT_FOLDER, parent);
+
+        //继承父commit中所有的blob 但是blob所追踪文件的名字不能和这个blob相同……
+
+        File commitFolder = join(COMMIT_FOLDER, parent);
         Commit parentCommit = readObject(commitFolder, Commit.class);
-        String parentSha1[] = parentCommit.allBlobString();
-        if (parentSha1 != null){
-            for (String fileName : parentSha1){
-                newCommit.addBlob(fileName); //设置成set很好的解决了重复性问题
+        TreeMap<String,String> parentBlobs = parentCommit.getBlobsMap();
+        if (parentBlobs != null){
+            for (String fileName : parentBlobs.keySet()){
+                if (!newCommit.getBlobsMap().containsKey(fileName)){
+                    newCommit.addBlob(fileName, parentBlobs.get(fileName));
+                }
             }
         }
-*/
+
         // 把removal里面存在的blob删除，并清空removal
         // 得到rmarea
         File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
         removal rmval = readObject(rmvalFile, removal.class);
-        String[] rmFileNames = rmval.allRemovalFilesSHA1();
-        for (String fileName : rmFileNames){
+        TreeMap<String,String> rmvalTreeMap = rmval.getRemovalsFile();
+
+        for (String fileName : rmvalTreeMap.keySet()){
             newCommit.removeBlob(fileName);
         }
         rmval.clearRemovalArea();
@@ -239,7 +246,7 @@ public class Repository {
         //得到要删除文件的sha1
         String rmFileSHA1 = Blob.getSHA1ByFile(SFN);
         if (thisCommit.ifExistsBlob(rmFileSHA1)){
-            thisCommit.removeBlob(rmFileSHA1);
+            thisCommit.removeBlob(fileName);
             //得到staging area 的removalfile
             File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
             removal rmval = readObject(rmvalFile, removal.class);
@@ -356,27 +363,24 @@ public class Repository {
 
     }
 
-    public static void WantedFileName(HashSet<String> blobNames, String WantedFileName) {
+    public static void WantedFileName(TreeMap<String, String> blobNames, String WantedFileName) {
         //blobnameset 反序列化 找这个文件
-        for (String blobName : blobNames){
-            File blobFile = join(BLOB_FOLDER, blobName);
+        if (blobNames != null && blobNames.containsKey(WantedFileName)) {
+            File blobFile = join(BLOB_FOLDER, blobNames.get(WantedFileName));
             Blob thisBlob = readObject(blobFile, Blob.class);
+            File wantedFile = join(PROJECT, WantedFileName);
+            byte[] content = thisBlob.getContent();
+            Utils.writeContents(wantedFile, content);
+            try {
+                wantedFile.createNewFile();
+            } catch (IOException e) {
 
-            if (thisBlob.getFileName().equals(WantedFileName)){
-                //找到了就还原
-                File wantedFile = join(PROJECT, WantedFileName);
-                byte[] content = thisBlob.getContent();
-                Utils.writeContents(wantedFile,content);
-                try {
-                    wantedFile.createNewFile();
-                }
-                catch (IOException e){
-
-                }
-                return;
             }
+        }
+        else{
             System.out.println("File does not exist in that commit.");
         }
+
     }
     public static void checkoutFile(String fileName)  {
         //从当前head里面取出来这个commit
@@ -385,7 +389,7 @@ public class Repository {
         Commit headCom = readObject(f, Commit.class);
 
         //从commit取出这个blobnameset
-        HashSet<String> blobNames = headCom.getBlobsSet();
+        TreeMap<String, String> blobNames = headCom.getBlobsMap();
 
         WantedFileName(blobNames, fileName);
 
@@ -399,8 +403,8 @@ public class Repository {
         }
         Commit thisCom = readObject(f, Commit.class);
 
-        //从commit取出这个blobnameset
-        HashSet<String> blobNames = thisCom.getBlobsSet();
+        //从commit取出这个blobnamemap
+        TreeMap<String, String> blobNames = thisCom.getBlobsMap();
         WantedFileName(blobNames, fileName);
     }
 
