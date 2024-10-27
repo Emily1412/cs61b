@@ -4,11 +4,14 @@ package gitlet;
 
 import java.io.File;
 
+import java.io.FilenameFilter;
 import java.io.Serializable;
 import java.time.Instant;
 
 import static gitlet.Utils.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 // TODO: You'll likely use this in this class
 
@@ -93,7 +96,10 @@ public class Commit implements Serializable {
         //计算哈希值 作为commit的文件名！
         byte[] this_byte = serialize(this);
         String filename = sha1(this_byte);
-        File f = join(COMMIT_FOLDER, filename);
+        String first2 = filename.substring(0, 2);
+        File fileFolder = new File(COMMIT_FOLDER, first2);
+        fileFolder.mkdirs();
+        File f = join(fileFolder, filename);
         writeObject(f, this);
         return filename;
     }
@@ -113,6 +119,25 @@ public class Commit implements Serializable {
     }
 
 
+    public static List<String> getwantedCommit(String prefix) {
+        String first2 = prefix.substring(0, 2);
+        File dir = join(COMMIT_FOLDER, first2);
+        List<String> matchingCommit = new ArrayList<>();
+
+        if (dir.isDirectory()) {
+            File[] matchingFiles = dir.listFiles((dir1, name) -> {
+                return name.startsWith(prefix);  // 检查文件名是否以prefix开头
+            });
+            if (matchingFiles != null) {
+                for (File file : matchingFiles) {
+                    // 添加文件全称
+                    matchingCommit.add(file.getName());
+                }
+
+            }
+        }
+        return matchingCommit;
+    }
     /* TODO: fill in the rest of this class. */
 }
 

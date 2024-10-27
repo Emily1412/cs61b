@@ -56,11 +56,18 @@ public class Main {
                         // 处理 "checkout [branch name]" 情况
                         Repository.checkoutBranch(args[1]);
                     }
+                case "branch":
+                    Repository.branch(args[1]);
+                    break;
+                case "rm-branch":
+                    Repository.rmBranch(args[1]);
+                    break;
                     // TODO: FILL THE REST IN
             }
         }
         catch (Exception e) {
             Utils.error(e.getMessage());
         }
+
     }
 }

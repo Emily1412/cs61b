@@ -1,15 +1,14 @@
 package gitlet;
 
+
+
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.time.format.DateTimeFormatter;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Locale;
-import java.util.TreeMap;
 
 import static gitlet.Utils.*;
 
@@ -40,10 +39,9 @@ public class Repository {
 
     static final File COMMIT_FOLDER = join(".gitlet","commits");
     static final File BLOB_FOLDER = join(".gitlet","blobs");
-    static final File FILENAME_FOLDER = join(".gitlet/staging_area","fileNames");
 
     static final File HEAD = join(".gitlet","head.txt");
-
+    static final File BRANCH_FOLDER = join(".gitlet","branches");
     static final File CURRENT_BRANCH = join(".gitlet","currentBranch.txt");
 
     //是整个仓库的head (正处在的地方）
@@ -192,8 +190,9 @@ public class Repository {
         adt.clearAdditionArea();
 
         //继承父commit中所有的blob 但是blob所追踪文件的名字不能和这个blob相同……
-
-        File commitFolder = join(COMMIT_FOLDER, parent);
+        String first2 = head.substring(0, 2);
+        File commitAbbFolder = join(COMMIT_FOLDER, first2);
+        File commitFolder = join(commitAbbFolder, head);
         Commit parentCommit = readObject(commitFolder, Commit.class);
         TreeMap<String,String> parentBlobs = parentCommit.getBlobsMap();
         if (parentBlobs != null){
@@ -218,6 +217,11 @@ public class Repository {
         //commit持久化，移动头指针
        String ThisSHA1 = newCommit.saveCommit();
        saveHead(ThisSHA1);
+       //更新分支 添加新节点
+       String curBrachName = getCurrentBranch();
+       File branchFile = join(BRANCH_FOLDER, curBrachName);
+       Branch curBranch = readObject(branchFile, Branch.class);
+       curBranch.addCommit(ThisSHA1);
     }
 
     //fileName是需要被删除的文件
@@ -239,7 +243,9 @@ public class Repository {
         //如果文件被当前提交跟踪 (已经 commit)，`rm` 会在暂存区标记其为删除，并从工作目录中删除。
         File head = HEAD;
         String headCommit = readContentsAsString(head);
-        File thisCommitFile = join(COMMIT_FOLDER, headCommit);
+        String first2 = headCommit.substring(0, 2);
+        File thisCommitFilef = join(COMMIT_FOLDER, first2);
+        File thisCommitFile = join(thisCommitFilef, headCommit);
         //这个是当前commit
         Commit thisCommit = readObject(thisCommitFile, Commit.class);
 
@@ -279,16 +285,18 @@ public class Repository {
         //从当前这个commit开始从后往前输出信息直到initialCommit
         String headSHA1 = getHead();
         String thisSHA1 = headSHA1;
-        File f = join(COMMIT_FOLDER, thisSHA1);
+        String first2 = thisSHA1.substring(0,2);
+        File file = join(COMMIT_FOLDER, first2);
+        File f = join(file, thisSHA1);
         Commit thisCom = readObject(f, Commit.class);
         while (!thisCom.getMessage().equals("initial commit")){
             printlog(thisCom, thisSHA1);
             String[] parents = thisCom.getParentsSHA1();
-
-            File nextf = join(COMMIT_FOLDER, parents[0]);
+            String pfirst2 = parents[0].substring(0,2);
+            File pfile = join(COMMIT_FOLDER, pfirst2);
+            File nextf = join(pfile, parents[0]);
             thisSHA1 = parents[0];
             thisCom = readObject(nextf, Commit.class);
-
         }
         printlog(thisCom, thisSHA1);
     }
@@ -298,12 +306,24 @@ public class Repository {
             System.err.println("There is no .Gitlet folder.");
             return;
         }
-        List<String> CommitFileNames = plainFilenamesIn(COMMIT_FOLDER);
-        for (String fileName : CommitFileNames){
-            File f = join(COMMIT_FOLDER, fileName);
-            Commit thisCom = readObject(f, Commit.class);
-            printlog(thisCom,fileName);
-        }
+        File[] commitFolders = COMMIT_FOLDER.listFiles();
+        if (commitFolders != null) {
+            //枚举所有的内层folder
+            for (File folder : commitFolders) {
+                if (folder.isDirectory()) {
+                    // 列出子文件夹中的普通文件
+                    List<String> ThisFolderNames = plainFilenamesIn(folder);
+                    if (ThisFolderNames != null) {
+                        for (String fileName : ThisFolderNames) {
+                                // 将文件名添加到列表
+                            File f = join(COMMIT_FOLDER, folder.getName(), fileName);
+                            Commit thisCom = readObject(f, Commit.class);
+                            printlog(thisCom,fileName);
+                            }
+                        }
+                    }
+                }
+            }
     }
 
 
@@ -312,14 +332,28 @@ public class Repository {
             System.err.println("There is no .Gitlet folder.");
             return;
         }
-        List<String> CommitFileNames = plainFilenamesIn(COMMIT_FOLDER);
-        for (String fileName : CommitFileNames){
-            File f = join(COMMIT_FOLDER, fileName);
-            Commit thisCom = readObject(f, Commit.class);
-            if (thisCom.getMessage().equals(msg)){
-                System.out.println(fileName);
+
+        File[] commitFolders = COMMIT_FOLDER.listFiles();
+        if (commitFolders != null) {
+            //枚举所有的内层folder
+            for (File folder : commitFolders) {
+                if (folder.isDirectory()) {
+                    // 列出子文件夹中的普通文件
+                    List<String> ThisFolderNames = plainFilenamesIn(folder);
+                    if (ThisFolderNames != null) {
+                        for (String fileName : ThisFolderNames) {
+                            // 将文件名添加到列表
+                            File f = join(COMMIT_FOLDER, folder.getName(), fileName);
+                            Commit thisCom = readObject(f, Commit.class);
+                            if (thisCom.getMessage().equals(msg)){
+                                System.out.println(fileName);
+                            }
+                        }
+                    }
+                }
             }
         }
+
     }
 
     //展示所有文件的状态 每个板块按照字典序排序
@@ -370,7 +404,7 @@ public class Repository {
             Blob thisBlob = readObject(blobFile, Blob.class);
             File wantedFile = join(PROJECT, WantedFileName);
             byte[] content = thisBlob.getContent();
-            Utils.writeContents(wantedFile, content);
+            writeContents(wantedFile, content);
             try {
                 wantedFile.createNewFile();
             } catch (IOException e) {
@@ -385,7 +419,7 @@ public class Repository {
     public static void checkoutFile(String fileName)  {
         //从当前head里面取出来这个commit
         String headComName = getHead();
-        File f = join(COMMIT_FOLDER, headComName);
+        File f = join(COMMIT_FOLDER, headComName.substring(0,2),headComName);
         Commit headCom = readObject(f, Commit.class);
 
         //从commit取出这个blobnameset
@@ -397,7 +431,7 @@ public class Repository {
 
     public static void checkoutFileFromCommit(String commitID, String fileName) {
         // 反序列化这个commit
-        File f = join(COMMIT_FOLDER, commitID);
+        File f = join(COMMIT_FOLDER, commitID.substring(0,2), commitID);
         if (!f.exists()){
             System.out.println("No commit with that id exists.");
         }
@@ -408,6 +442,63 @@ public class Repository {
         WantedFileName(blobNames, fileName);
     }
 
-    public static void checkoutBranch(String arg) {
+    public static void checkoutBranch(String branchName) {
+        File f = join(BRANCH_FOLDER, branchName);
+        if (!f.exists()){
+            System.out.println("No such branch exists.");
+            return;
+        }
+        //更改当前branch名字
+        String curbranchName = getCurrentBranch();
+        if (curbranchName.equals(branchName)){
+            System.out.println("No need to checkout the current branch.");
+            return;
+        }
+
+        //当前前分支中有未跟踪的文件，并且这些文件会被目标分支覆盖 报错
+        // 如何确定当前分支的未跟踪文件
+        //对象化当前branch最新的commit
+
+        //将这个最新的commit重现在工作目录中
+
+        //全部覆盖工作目录中的文件（如果存在相同文件）
+        // 并删除当前分支中有跟踪但目标分支中没有的文件。
+
     }
+
+    //创建新的branch
+    public static void branch(String newBranchName) {
+        File f = join(BRANCH_FOLDER, newBranchName);
+        if (f.exists()){
+            System.out.println("A branch with that name already exists.");
+        }
+        else {
+            Branch newBranch = new Branch(newBranchName);
+            newBranch.addCommit(getHead());
+        }
+    }
+
+    public static void rmBranch(String rmBranchName) {
+        File f = join(BRANCH_FOLDER, rmBranchName);
+        if (!f.exists()){
+            System.out.println("A branch with that name does not exist.");
+            return;
+        }
+        if (rmBranchName.equals(getCurrentBranch())){
+            System.out.println("Cannot remove the current branch.");
+            return;
+        }
+        f.delete();
+    }
+
+    //调试helper_method 打印工作目录下所有文件
+    public static void printFile(){
+        List<String> NAMES = plainFilenamesIn(PROJECT);
+        for (String name : NAMES){
+            System.out.println(name);
+        }
+    }
+
+
+
 }
