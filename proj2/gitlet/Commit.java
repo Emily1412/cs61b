@@ -1,10 +1,10 @@
 package gitlet;
 
-// TODO: any imports you need here
+
 
 import java.io.File;
 
-import java.io.FilenameFilter;
+
 import java.io.Serializable;
 import java.time.Instant;
 
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.TreeSet;
-// TODO: You'll likely use this in this class
+
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -32,7 +32,7 @@ public class Commit implements Serializable {
      */
 
     /** The message of this Commit. */
-    static final File COMMIT_FOLDER = join(".gitlet","commits");
+    static final File COMMIT_FOLDER = join(".gitlet", "commits");
     public static final File PROJECT = new File(System.getProperty("user.dir"));
     private String message;
     private Instant commitTime;
@@ -40,7 +40,7 @@ public class Commit implements Serializable {
 
     private String[] parentsSHA1;
 
-    public Commit(){
+    public Commit() {
         message = "";
         commitTime = Instant.now();
         blobsmap = new TreeMap<>();
@@ -52,8 +52,7 @@ public class Commit implements Serializable {
         this.commitTime = commitTime;
         if (blobsmap == null) {
             blobsmap = new TreeMap<>();
-        }
-        else {
+        } else {
             this.blobsmap  = blobsmap;
         }
         this.parentsSHA1 = parents;
@@ -79,25 +78,25 @@ public class Commit implements Serializable {
     }
 
     //得到所有blob的哈希值
-    public  String[] allBlobString(){
+    public  String[] allBlobString() {
         if (blobsmap == null) {
             return null;
         }
-        String[] BlobString = new String[blobsmap.size()];
+        String[] blobString = new String[blobsmap.size()];
         int i = 0;
-        for (String item : blobsmap.keySet()){
-            BlobString[i++] = blobsmap.get(item);
+        for (String item : blobsmap.keySet()) {
+            blobString[i++] = blobsmap.get(item);
         }
-        return BlobString;
+        return blobString;
     }
-    public void addBlob(String FileName,String blobname){
-        blobsmap.put(FileName,blobname);
+    public void addBlob(String fileName, String blobname) {
+        blobsmap.put(fileName, blobname);
     }
 
     public String saveCommit() {
         //计算哈希值 作为commit的文件名！
-        byte[] this_byte = serialize(this);
-        String filename = sha1(this_byte);
+        byte[] thisByte = serialize(this);
+        String filename = sha1(thisByte);
         String first2 = filename.substring(0, 2);
         File fileFolder = new File(COMMIT_FOLDER, first2);
         fileFolder.mkdirs();
@@ -112,9 +111,9 @@ public class Commit implements Serializable {
         }
     }
 
-    public boolean ifExistsBlob(String FileName){
+    public boolean ifExistsBlob(String FileName) {
         //一定要注意空指针访问问题
-        if (blobsmap == null){
+        if (blobsmap == null) {
             return false;
         }
         return blobsmap.containsKey(FileName);
@@ -141,17 +140,17 @@ public class Commit implements Serializable {
         return matchingCommit;
     }
 
-    public static List<String> getAllCommitNames(){
-        List <String> allCommitNames = new ArrayList<>();
+    public static List<String> getAllCommitNames() {
+        List<String> allCommitNames = new ArrayList<>();
         File[] commitFolders = COMMIT_FOLDER.listFiles();
         if (commitFolders != null) {
             //枚举所有的内层folder
             for (File folder : commitFolders) {
                 if (folder.isDirectory()) {
                     // 列出子文件夹中的普通文件
-                    List<String> ThisFolderNames = plainFilenamesIn(folder);
-                    if (ThisFolderNames != null) {
-                        for (String fileName : ThisFolderNames) {
+                    List<String> thisFolderNames = plainFilenamesIn(folder);
+                    if (thisFolderNames != null) {
+                        for (String fileName : thisFolderNames) {
                             // 将文件名添加到列表
                             allCommitNames.add(fileName);
                         }
@@ -163,18 +162,18 @@ public class Commit implements Serializable {
     }
 
     public static boolean ifExistsCommit(String filename) {
-        List <String> AllNames = getAllCommitNames();
-        if (AllNames == null){
+        List<String> allNames = getAllCommitNames();
+        if (allNames == null) {
             return false;
         }
-        return AllNames.contains(filename);
+        return allNames.contains(filename);
     }
 
-    public static List<String> getAllWorkNames(){
-        List<String> AllNames = Utils.plainFilenamesIn(PROJECT);
-        AllNames.remove("Makefile");
-        AllNames.remove("pom.xml");
-        return AllNames;
+    public static List<String> getAllWorkNames() {
+        List<String> allNames = new ArrayList<>(Utils.plainFilenamesIn(PROJECT));
+        allNames.remove("Makefile");
+        allNames.remove("pom.xml");
+        return allNames;
     }
     public static boolean ifHasUntrackedFile(String CommitName) {
         //得到当前工作目录中的所有文件
@@ -205,15 +204,15 @@ public class Commit implements Serializable {
         List<String> AllNames = getAllWorkNames();
         //得到这个commit的blobMap
         TreeMap<String, String> blobsmap = getCommitBlobMap(thisCommit);
-        TreeSet<String> UntrackedFileNames = new TreeSet<>();
+        TreeSet<String> untrackedFileNames = new TreeSet<>();
         //如果有工作目录中的文件不在这个commit里，就加入到结果集中
         for (String fileName : AllNames) {
-            if (!blobsmap.containsKey(fileName)) {
-                UntrackedFileNames.add(fileName);
+            if (blobsmap == null || !blobsmap.containsKey(fileName)) {
+                untrackedFileNames.add(fileName);
             }
         }
-        return UntrackedFileNames;
+        return untrackedFileNames;
     }
-    /* TODO: fill in the rest of this class. */
+
 }
 

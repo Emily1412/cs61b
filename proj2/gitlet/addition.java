@@ -1,18 +1,9 @@
 package gitlet;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
 
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.TreeMap;
-
-import gitlet.Blob;
-import gitlet.Utils;
 
 import static gitlet.Utils.*;
 
@@ -35,32 +26,33 @@ public class addition implements Serializable {
 
     //此处需判断文件名一致，且内容一致
      boolean ifExists(String fileName) {
-         if (additionFiles == null){
+         if (additionFiles == null) {
              return false;
          }
          else return additionFiles.containsKey(fileName);
     }
 
+    //判断文件的内容一不一样
     boolean sameSHA1(String fileName, String compareSHA1) {
-         if (additionFiles != null && additionFiles.containsKey(fileName)){
+         if (additionFiles != null && additionFiles.containsKey(fileName)) {
              return compareSHA1.equals(additionFiles.get(fileName));
          }
          return false;
     }
-    //判断文件的内容一不一样
+
 
 
     public void remove(String filename) {
-        if (additionFiles != null){
-            additionFiles.remove(filename);
-        }
-        saveAdditionArea();
-    }
+         if (additionFiles != null) {
+             additionFiles.remove(filename);
+         }
+         saveAdditionArea();
+     }
 
     //这里一定要记得第二个传整个文件名！！
     public void addFile(File f, String name) {
         //从f这里取哈希名，从name这里取文件名  好反直觉。。
-        if (f != null){
+        if (f != null) {
             //文件名是主键，哈希值是值
             additionFiles.put(name, f.getName());
         }
@@ -68,7 +60,7 @@ public class addition implements Serializable {
     }
 
 
-    public String[] allAdditionFilesSHA1(){
+    public String[] allAdditionFilesSHA1() {
         if (additionFiles != null){
             String[] blobFileNames = new String[additionFiles.size()];
             int i = 0;
@@ -80,11 +72,11 @@ public class addition implements Serializable {
         return null;
     }
 
-    public String[] allOrderedAdditionFiles(){
+    public String[] allOrderedAdditionFiles() {
         String[] blobFileNames = new String[additionFiles.size()];
         int i = 0;
-        if (additionFiles != null){
-            for (String fileName : additionFiles.keySet()){
+        if (additionFiles != null) {
+            for (String fileName : additionFiles.keySet()) {
                 blobFileNames[i++] = fileName;
             }
         }
@@ -97,7 +89,7 @@ public class addition implements Serializable {
     }
 
     public void saveAdditionArea() {
-        File f = join(ADDITIONS_FOLDER,"additionTreeMap");
+        File f = join(ADDITIONS_FOLDER, "additionTreeMap");
         writeObject(f, this);
     }
 
@@ -106,11 +98,11 @@ public class addition implements Serializable {
          return additionFiles;
     }
 
-    public static boolean isAdditionEmpty(){
+    public static boolean isAdditionEmpty() {
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
         addition adt = readObject(adtFile, addition.class);
         TreeMap<String,String> treeMap = adt.getTreeMap();
-        if (treeMap == null){
+        if (treeMap.size() == 0) {
             return true;
         }
         return false;

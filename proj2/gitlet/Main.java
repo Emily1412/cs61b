@@ -1,9 +1,8 @@
 package gitlet;
 
-import java.io.IOException;
 
 import static gitlet.Repository.log;
-import static gitlet.Repository.rm;
+
 
 
 /** Driver class for Gitlet, a subset of the Git version-control system.
