@@ -105,6 +105,16 @@ public class addition implements Serializable {
     public TreeMap<String, String> getTreeMap() {
          return additionFiles;
     }
+
+    public static boolean isAdditionEmpty(){
+        File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
+        addition adt = readObject(adtFile, addition.class);
+        TreeMap<String,String> treeMap = adt.getTreeMap();
+        if (treeMap == null){
+            return true;
+        }
+        return false;
+    }
 }
 
 

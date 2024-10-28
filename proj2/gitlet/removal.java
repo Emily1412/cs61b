@@ -56,6 +56,15 @@ public class removal implements Serializable {
         saveRemovalArea();
     }
 
+    public static boolean isRmvalEmpty(){
+        File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
+        removal rmval = readObject(rmvalFile, removal.class);
+        TreeMap<String,String> treeMap = rmval.getRemovalsFile();
+        if (treeMap == null){
+            return true;
+        }
+        return false;
+    }
     public TreeMap<String, String> getRemovalsFile() {
         return removalsFile;
     }

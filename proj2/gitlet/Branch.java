@@ -1,7 +1,6 @@
 package gitlet;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.TreeMap;
@@ -13,8 +12,7 @@ import java.util.TreeMap;
  * @version 1.0
  * @Create 2024/10/23 17:37
  */
-import gitlet.Utils;
-import gitlet.Commit;
+
 
 import static gitlet.Utils.join;
 import static gitlet.Utils.writeObject;
@@ -26,7 +24,7 @@ public class Branch implements Serializable {
     //最后面的就是头结点
     String branchName;
 
-    static final File BRANCH_FOLDER = join(".gitlet","branches");
+    static final File BRANCH_FOLDER = join(".gitlet", "branches");
     public Branch(String branchName) {
         commitsList = new TreeMap<Integer, String>();
         this.branchName = branchName;
@@ -38,9 +36,9 @@ public class Branch implements Serializable {
         commitsList.remove(index);
         saveBranch();
     }
-    public void removeByName(String CommitName){
+    public void removeByName(String commitName) {
         for (int i : commitsList.keySet()) {
-            if (CommitName.equals(commitsList.get(i))) {
+            if (commitName.equals(commitsList.get(i))) {
                 commitsList.remove(i);
             }
         }
@@ -48,25 +46,24 @@ public class Branch implements Serializable {
     }
     public void addCommit(String commitName) {
         //一定记得检查是否为空！！如果为空调用lastKey()会异常
-        if (commitsList.isEmpty()){
+        if (commitsList.isEmpty()) {
             commitsList.put(0, commitName);
-        }
-        else {
+        } else {
             commitsList.put(commitsList.lastKey() + 1, commitName);
         }
 
         saveBranch();
     }
 
-    public void saveBranch(){
+    public void saveBranch() {
         File f = join(BRANCH_FOLDER, this.branchName);
         //新加入节点后要覆盖源文件
-        writeObject(f,this);
+        writeObject(f, this);
     }
-    public static List<String> listBranch(){
+    public static List<String> listBranch() {
         File f = BRANCH_FOLDER;
 
-        List<String> Branchlist = Utils.plainFilenamesIn(f);
-        return  Branchlist;
+        List<String> branchList = Utils.plainFilenamesIn(f);
+        return  branchList;
     }
 }

@@ -12,6 +12,8 @@ import java.time.ZonedDateTime;
 
 import static gitlet.Commit.*;
 import static gitlet.Utils.*;
+import static gitlet.addition.isAdditionEmpty;
+import static gitlet.removal.isRmvalEmpty;
 
 
 // TODO: any imports you need here
@@ -182,6 +184,10 @@ public class Repository {
             System.err.println("There is no .Gitlet folder.");
             return;
         }
+        if (isRmvalEmpty() && isAdditionEmpty()){
+            System.out.println("No changes added to the commit.");
+            return;
+        }
         //创建一个新的commit with msg & time
         String[] parent;
         String head = getHead();
@@ -238,6 +244,10 @@ public class Repository {
     public static void rm(String fileName) {
         //如果文件被暂存用于新增，`rm` 会将其从暂存区移除。
         //得到staging area 的addition区域
+        if(GITLET_DIR.exists()){
+            System.err.println("A Gitlet version-control system already exists in the current directory.");
+            return;
+        }
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
         addition adt = readObject(adtFile, addition.class);
         //SFN是当前工作目录下的这个文件本身（如果存在的话）
@@ -342,6 +352,10 @@ public class Repository {
 
     //展示所有文件的状态 每个板块按照字典序排序
     public static void status() {
+        if(GITLET_DIR.exists()){
+            System.err.println("A Gitlet version-control system already exists in the current directory.");
+            return;
+        }
         System.out.println("=== Branches ===");
         String thisBranch = getCurrentBranch();
         List<String> BranchList = Branch.listBranch();
@@ -408,6 +422,10 @@ public class Repository {
 
     }
     public static void checkoutFile(String fileName)  {
+        if(GITLET_DIR.exists()){
+            System.err.println("A Gitlet version-control system already exists in the current directory.");
+            return;
+        }
         //从当前head里面取出来这个commit
         String headComName = getHead();
         File f = join(COMMIT_FOLDER, headComName.substring(0,2),headComName);
@@ -421,6 +439,10 @@ public class Repository {
     }
 
     public static void checkoutFileFromCommit(String commitID, String fileName) {
+        if(GITLET_DIR.exists()){
+            System.err.println("A Gitlet version-control system already exists in the current directory.");
+            return;
+        }
         // 反序列化这个commit
         File f = join(COMMIT_FOLDER, commitID.substring(0,2), commitID);
         if (!f.exists()){
@@ -434,6 +456,10 @@ public class Repository {
     }
 
     public static void checkoutBranch(String branchName) {
+        if(GITLET_DIR.exists()){
+            System.err.println("A Gitlet version-control system already exists in the current directory.");
+            return;
+        }
         File f = join(BRANCH_FOLDER, branchName);
         if (!f.exists()){
             System.out.println("No such branch exists.");
@@ -459,6 +485,10 @@ public class Repository {
 
     //创建新的branch
     public static void branch(String newBranchName) {
+        if(GITLET_DIR.exists()){
+            System.err.println("A Gitlet version-control system already exists in the current directory.");
+            return;
+        }
         File f = join(BRANCH_FOLDER, newBranchName);
         if (f.exists()){
             System.out.println("A branch with that name already exists.");
@@ -470,6 +500,10 @@ public class Repository {
     }
 
     public static void rmBranch(String rmBranchName) {
+        if(GITLET_DIR.exists()){
+            System.err.println("A Gitlet version-control system already exists in the current directory.");
+            return;
+        }
         File f = join(BRANCH_FOLDER, rmBranchName);
         if (!f.exists()){
             System.out.println("A branch with that name does not exist.");
@@ -493,6 +527,10 @@ public class Repository {
 
     //这个参数是目标的ID 别和当前headID搞混了
     public static void reset(String CommitID) {
+        if(GITLET_DIR.exists()){
+            System.err.println("A Gitlet version-control system already exists in the current directory.");
+            return;
+        }
         //不存在这个commit
         if (!ifExistsCommit(CommitID)){
             System.out.println("No commit with that id exists.");
