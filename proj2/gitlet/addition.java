@@ -24,7 +24,7 @@ public class addition implements Serializable {
 
     static final File ADDITIONS_FOLDER = join(".gitlet/staging_area", "additions");
 
-    //此处需判断文件名一致，且内容一致
+     //此处需判断文件名一致，且内容一致
      boolean ifExists(String fileName) {
          if (additionFiles == null) {
              return false;

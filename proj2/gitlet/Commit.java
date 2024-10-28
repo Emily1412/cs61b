@@ -171,22 +171,22 @@ public class Commit implements Serializable {
     }
 
     //未被跟踪的文件指的是 既不在stageing area也不再头commitblob里的文件
-    public static boolean ifHasUntrackedFile(String CommitName) {
+    public static boolean ifHasUntrackedFile(String commitName) {
         //得到当前工作目录中的所有文件
-        List<String> AllNames = getAllWorkNames();
+        List<String> allNames = getAllWorkNames();
 
-        TreeMap<String, String> blobsmap = getCommitBlobMap(CommitName);
+        TreeMap<String, String> blobsmap = getCommitBlobMap(commitName);
 
         //得到暂存区
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
         addition adt = readObject(adtFile, addition.class);
-        TreeMap<String,String> addTreeMap = adt.getTreeMap();
+        TreeMap<String, String> addTreeMap = adt.getTreeMap();
         File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
         Removal rmval = readObject(rmvalFile, Removal.class);
-        TreeMap<String,String> rmvalTreeMap = rmval.getRemovalsFile();
+        TreeMap<String, String> rmvalTreeMap = rmval.getRemovalsFile();
         //和当前这个commit里的blobmap进行比较
-        if (AllNames != null){
-            for (String fileName : AllNames) {
+        if (allNames != null) {
+            for (String fileName : allNames) {
                 if (!blobsmap.containsKey(fileName)) {
                     if (!rmvalTreeMap.containsKey(fileName) && !addTreeMap.containsKey(fileName)) {
                         return true; //说明当前commit和stagingarea里面没有这个工作目录里的文件
@@ -197,9 +197,9 @@ public class Commit implements Serializable {
         return false; //当前工作目录为空或者所有文件都已经被追踪了
     }
 
-    public static TreeMap<String, String> getCommitBlobMap(String CommitName) {
+    public static TreeMap<String, String> getCommitBlobMap(String commitName) {
         // 得到当前commit
-        File f = join(COMMIT_FOLDER, CommitName.substring(0, 2),CommitName);
+        File f = join(COMMIT_FOLDER, commitName.substring(0, 2), commitName);
         Commit thisCommit = readObject(f, Commit.class);
         TreeMap<String, String> blobsmap = thisCommit.getBlobsMap();
         return blobsmap;
@@ -207,7 +207,7 @@ public class Commit implements Serializable {
 
     public static void checkOutCommit(String commitName) {
         TreeMap<String, String> thisCommitBlobMap = getCommitBlobMap(commitName);
-        if (thisCommitBlobMap == null){
+        if (thisCommitBlobMap == null) {
             return;
         }
         for (String fileName : thisCommitBlobMap.keySet()) {
@@ -216,9 +216,9 @@ public class Commit implements Serializable {
             Blob.reviveFile(thisBlobName, fileName);
         }
     }
-    public static TreeSet<String> UntrackedFileNames(String thisCommit) {
+    public static TreeSet<String> untrackedFileNames(String thisCommit) {
         //得到工作目录文件
-        List<String> AllNames = getAllWorkNames();
+        List<String> allNames = getAllWorkNames();
         //得到这个commit的blobMap
         TreeMap<String, String> blobsmap = getCommitBlobMap(thisCommit);
         //初始化结果集
@@ -227,13 +227,13 @@ public class Commit implements Serializable {
         //得到暂存区
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
         addition adt = readObject(adtFile, addition.class);
-        TreeMap<String,String> addTreeMap = adt.getTreeMap();
+        TreeMap<String, String> addTreeMap = adt.getTreeMap();
         File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
         Removal rmval = readObject(rmvalFile, Removal.class);
-        TreeMap<String,String> rmvalTreeMap = rmval.getRemovalsFile();
+        TreeMap<String, String> rmvalTreeMap = rmval.getRemovalsFile();
 
         //如果有工作目录中的文件不在这个commit里，就加入到结果集中
-        for (String fileName : AllNames) {
+        for (String fileName : allNames) {
             if (blobsmap == null || !blobsmap.containsKey(fileName)) {
                 if (!rmvalTreeMap.containsKey(fileName) && !addTreeMap.containsKey(fileName)) {
                     untrackedFileNames.add(fileName);

@@ -50,7 +50,7 @@ public class Repository {
     //是整个仓库的head (正处在的地方）
     private static String head;
 
-    static boolean checkGiletFolder(){
+    static boolean checkGiletFolder() {
         if (!GITLET_DIR.exists()) {
             System.err.println("Not in an initialized Gitlet directory.");
             return false;
@@ -271,7 +271,7 @@ public class Repository {
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
         addition adt = readObject(adtFile, addition.class);
         //SFN是当前工作目录下的这个文件本身（如果存在的话）
-        File SFN = join(PROJECT, fileName);
+        File sfn = join(PROJECT, fileName);
         if (adt.ifExists(fileName)) {
             adt.remove(fileName);
             return;
@@ -285,7 +285,7 @@ public class Repository {
             File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
             Removal rmval = readObject(rmvalFile, Removal.class);
             rmval.addFile(headComBlobMap.get(fileName), fileName);
-            SFN.delete();
+            sfn.delete();
         } else {
             System.err.println("No reason to remove the file");
         }
@@ -359,7 +359,7 @@ public class Repository {
                 flag = true;
             }
         }
-        if (flag == false) {
+        if (!flag) {
             System.out.println("Found no commit with that message.");
         }
     }
@@ -409,7 +409,7 @@ public class Repository {
 
         System.out.println("=== Untracked Files ===");
         String headSHA1 = getHead();
-        TreeSet<String> utFs = UntrackedFileNames(headSHA1);
+        TreeSet<String> utFs = untrackedFileNames(headSHA1);
         if (utFs.size() != 0) {
             for (String fileName : utFs) {
                 System.out.println(fileName);
@@ -493,13 +493,12 @@ public class Repository {
         }
         //得到目标分支文件表
         String branCommitName = Branch.getBranchHeadCommit(branchName);
-        if (branCommitName == null){
+        if (branCommitName == null) {
             //这个分支是个空分支
-            TreeSet<String> untrackedFileNames = UntrackedFileNames(getHead());
+            TreeSet<String> untrackedFileNames = untrackedFileNames(getHead());
             if (untrackedFileNames.size() != 0) {
                 System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
-            }
-            else {
+            } else {
                 checkOutCommit(branCommitName);
                 List<String> allWorkNames = getAllWorkNames();
                 if (allWorkNames.size() != 0) {
@@ -515,7 +514,7 @@ public class Repository {
         TreeMap<String, String> branchFileNames = Commit.getCommitBlobMap(branCommitName);
 
         //当前前分支中有未跟踪的文件，并且这些文件会被目标分支覆盖 报错
-        TreeSet<String> untrackedFileNames = UntrackedFileNames(getHead());
+        TreeSet<String> untrackedFileNames = untrackedFileNames(getHead());
         if (untrackedFileNames.size() != 0) {
             for (String fileName : untrackedFileNames) {
                 if (branchFileNames.containsKey(fileName)) {
@@ -601,7 +600,7 @@ public class Repository {
         TreeMap<String, String> desCommitBlobMap = getCommitBlobMap(commitID);
         //当前headID
         String headSHA1 = getHead();
-        TreeSet<String> untrackedFileNames = UntrackedFileNames(headSHA1);
+        TreeSet<String> untrackedFileNames = untrackedFileNames(headSHA1);
         if (untrackedFileNames.size() != 0) {
             for (String fileName : untrackedFileNames) {
                 if (desCommitBlobMap.containsKey(fileName)) {
