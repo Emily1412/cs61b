@@ -50,6 +50,13 @@ public class Repository {
     //是整个仓库的head (正处在的地方）
     private static String head;
 
+    static boolean checkGiletFolder(){
+        if (!GITLET_DIR.exists()) {
+            System.err.println("Not in an initialized Gitlet directory.");
+            return false;
+        }
+        return true;
+    }
     static boolean checkFolder() {
         File f = new File(CWD, ".gitlet");
         if (f.exists() && f.isDirectory()) {
@@ -118,8 +125,7 @@ public class Repository {
 
     //将文件添加到暂存区 每次只加一个即可（这和真正的git不同）
     public static void add(String fileName) {
-        if (!checkFolder()) {
-            System.err.println("There is no .Gitlet folder.");
+        if (!checkGiletFolder()) {
             return;
         }
 
@@ -177,10 +183,10 @@ public class Repository {
 
     //处理commit,msg是信息
     public static void commit(String msg) {
-        if (!checkFolder()) {
-            System.err.println("There is no .Gitlet folder.");
+        if (!checkGiletFolder()) {
             return;
         }
+
         if (isRmvalEmpty() && isAdditionEmpty()) {
             System.out.println("No changes added to the commit.");
             return;
@@ -244,10 +250,10 @@ public class Repository {
     public static void rm(String fileName) {
         //如果文件被暂存用于新增，`rm` 会将其从暂存区移除。
         //得到staging area 的addition区域
-        if (!checkFolder()) {
-            System.err.println("There is no .Gitlet folder.");
+        if (!checkGiletFolder()) {
             return;
         }
+
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
         addition adt = readObject(adtFile, addition.class);
         //SFN是当前工作目录下的这个文件本身（如果存在的话）
@@ -287,10 +293,10 @@ public class Repository {
         System.out.print("\n");  // 确保日志输出的格式正确
     }
     public static void log() {
-        if (!checkFolder()) {
-            System.err.println("There is no .Gitlet folder.");
+        if (!checkGiletFolder()) {
             return;
         }
+
         //从当前这个commit开始从后往前输出信息直到initialCommit
         String headSHA1 = getHead();
         String thisSHA1 = headSHA1;
@@ -311,10 +317,10 @@ public class Repository {
     }
 
     public static void globalLog() {
-        if (!checkFolder()) {
-            System.err.println("There is no .Gitlet folder.");
+        if (!checkGiletFolder()) {
             return;
         }
+
         List<String> allCommitNames = getAllCommitNames();
         for (String commitName : allCommitNames) {
             File f = join(COMMIT_FOLDER, commitName.substring(0, 2), commitName);
@@ -325,10 +331,10 @@ public class Repository {
 
 
     public static void find(String msg) {
-        if (!checkFolder()) {
-            System.err.println("There is no .Gitlet folder.");
+        if (!checkGiletFolder()) {
             return;
         }
+
         List<String> allCommitNames = getAllCommitNames();
         boolean flag = false;
         for (String commitName : allCommitNames) {
@@ -346,10 +352,10 @@ public class Repository {
 
     //展示所有文件的状态 每个板块按照字典序排序
     public static void status() {
-        if (!checkFolder()) {
-            System.err.println("There is no .Gitlet folder.");
+        if (!checkGiletFolder()) {
             return;
         }
+
         System.out.println("=== Branches ===");
         String thisBranch = getCurrentBranch();
         List<String> branchList = Branch.listBranch();
@@ -419,10 +425,10 @@ public class Repository {
 
     //切换到当前commit的这个文件
     public static void checkoutFile(String fileName) {
-        if (!checkFolder()) {
-            System.err.println("There is no .Gitlet folder.");
+        if (!checkGiletFolder()) {
             return;
         }
+
         //从当前head里面取出来这个commit
         String headComName = getHead();
         File f = join(COMMIT_FOLDER, headComName.substring(0, 2), headComName);
@@ -436,11 +442,12 @@ public class Repository {
     }
 
     public static void checkoutFileFromCommit(String commitID, String fileName) {
-        if (!checkFolder()) {
-            System.err.println("There is no .Gitlet folder.");
+        if (!checkGiletFolder()) {
             return;
         }
+
         // 反序列化这个commit
+        // 前缀匹配就找到了！！？
         File f = join(COMMIT_FOLDER, commitID.substring(0, 2), commitID);
         if (!f.exists()) {
             System.out.println("No commit with that id exists.");
@@ -453,39 +460,57 @@ public class Repository {
     }
 
     public static void checkoutBranch(String branchName) {
-        if (!checkFolder()) {
-            System.err.println("There is no .Gitlet folder.");
+        if (!checkGiletFolder()) {
             return;
         }
+
         File f = join(BRANCH_FOLDER, branchName);
         if (!f.exists()) {
             System.out.println("No such branch exists.");
             return;
         }
-        //更改当前branch名字
+
+        //当前分支的名字
         String curbranchName = getCurrentBranch();
         if (curbranchName.equals(branchName)) {
             System.out.println("No need to checkout the current branch.");
-
+            return;
         }
+        //得到目标分支文件表
+        String branCommitName = Branch.getBranchHeadCommit(branchName);
+        TreeMap<String, String> branchFileNames = Commit.getCommitBlobMap(branCommitName);
 
         //当前前分支中有未跟踪的文件，并且这些文件会被目标分支覆盖 报错
-        // 如何确定当前分支的未跟踪文件
-        //对象化当前branch最新的commit
-
+        TreeSet<String> untrackedFileNames = UntrackedFileNames(getHead());
+        if (untrackedFileNames.size() != 0) {
+            for (String fileName : untrackedFileNames) {
+                if (branchFileNames.containsKey(fileName)) {
+                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                }
+            }
+        }
         //将这个最新的commit重现在工作目录中
-
+        checkOutCommit(branCommitName);
         //全部覆盖工作目录中的文件（如果存在相同文件）
         // 并删除当前分支中有跟踪但目标分支中没有的文件。
-
+        TreeMap<String, String> nowCommitFileNames = Commit.getCommitBlobMap(getHead());
+        for (String fileName : nowCommitFileNames.keySet()) {
+            if (!branchFileNames.containsKey(fileName)) {
+                File toBeDeleted = join(PROJECT, fileName);
+                toBeDeleted.delete();
+            }
+        }
+        //更改当前branch名字
+        saveCurrBranch(branchName);
+        saveHead(branCommitName);
     }
 
     //创建新的branch
     public static void branch(String newBranchName) {
-        if (!checkFolder()) {
-            System.err.println("There is no .Gitlet folder.");
+        if (!checkGiletFolder()) {
             return;
         }
+
         File f = join(BRANCH_FOLDER, newBranchName);
         if (f.exists()) {
             System.out.println("A branch with that name already exists.");
@@ -496,10 +521,10 @@ public class Repository {
     }
 
     public static void rmBranch(String rmBranchName) {
-        if (!checkFolder()) {
-            System.err.println("There is no .Gitlet folder.");
+        if (!checkGiletFolder()) {
             return;
         }
+
         File f = join(BRANCH_FOLDER, rmBranchName);
         if (!f.exists()) {
             System.out.println("A branch with that name does not exist.");
@@ -523,10 +548,10 @@ public class Repository {
 
     //这个参数是目标的ID 别和当前headID搞混了
     public static void reset(String commitID) {
-        if (!checkFolder()) {
-            System.err.println("There is no .Gitlet folder.");
+        if (!checkGiletFolder()) {
             return;
         }
+
         //不存在这个commit
         if (!ifExistsCommit(commitID)) {
             System.out.println("No commit with that id exists.");

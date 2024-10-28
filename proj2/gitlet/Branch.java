@@ -11,11 +11,7 @@ import java.util.TreeMap;
  * @author Emily
  * @version 1.0
  * @Create 2024/10/23 17:37
- */
-
-
-import static gitlet.Utils.join;
-import static gitlet.Utils.writeObject;
+ */import static gitlet.Utils.*;
 
 public class Branch implements Serializable {
     //key小的是前面的，key大的是最近的,用相对大小描述大小关系即可，具体值不重要
@@ -65,5 +61,12 @@ public class Branch implements Serializable {
 
         List<String> branchList = Utils.plainFilenamesIn(f);
         return  branchList;
+    }
+
+    public static String getBranchHeadCommit(String branchName) {
+        File f = join(BRANCH_FOLDER,branchName);
+        Branch b = readObject(f, Branch.class);
+        String commitName = b.commitsList.get(b.commitsList.lastKey());
+        return commitName;
     }
 }

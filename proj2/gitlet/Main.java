@@ -78,7 +78,9 @@ public class Main {
                 case "reset":
                     Repository.reset(args[1]);
                     break;
-                    // TODO: FILL THE REST IN
+                default:
+                    System.out.println("No command with that name exists.");
+                    break;
             }
         }
         catch (Exception e) {
