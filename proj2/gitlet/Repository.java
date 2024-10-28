@@ -152,16 +152,18 @@ public class Repository {
             return;
         }
 
+        //如果现在头commit文件已经在追踪这个文件且内容一样直接返回
         TreeMap<String, String> thisComBlobMap = getCommitBlobMap(getHead());
 
         if (thisComBlobMap != null && thisComBlobMap.containsKey(fileName)){
-            return;
+            if (blobName.equals(thisComBlobMap.get(fileName))){
+                return;
+            }
         }
 
         //成功暂存，如果同一个文件已经被暂存了，暂存的新文件会覆盖旧文件
         if (adt.ifExists(fileName) && !adt.sameSHA1(fileName, blobName)){
             adt.addFile(f,fileName);
-            return;
         }
         else {
             adt.addFile(f,fileName);
