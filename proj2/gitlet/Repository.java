@@ -253,7 +253,6 @@ public class Repository {
         File SFN = join(PROJECT, fileName);
         if (adt.ifExists(fileName)) {
             adt.remove(fileName);
-            adt.saveAdditionArea();
             return;
         }
 
@@ -380,6 +379,7 @@ public class Repository {
         System.out.println();
 
         System.out.println("=== Modifications Not Staged For Commit ===");
+        System.out.println();
 
         System.out.println("=== Untracked Files ===");
         String headSHA1 = getHead();
@@ -410,6 +410,7 @@ public class Repository {
         }
 
     }
+
     public static void checkoutFile(String fileName) {
         if (!checkFolder()) {
             System.err.println("There is no .Gitlet folder.");
@@ -525,11 +526,12 @@ public class Repository {
             return;
         }
         //有未跟踪的文件会被目标Commit所覆盖
+        //目标文件的blobmap
         TreeMap<String, String> desCommitBlobMap = getCommitBlobMap(commitID);
         //当前headID
         String headSHA1 = getHead();
         TreeSet<String> untrackedFileNames = UntrackedFileNames(headSHA1);
-        if (untrackedFileNames != null) {
+        if (untrackedFileNames.size() != 0) {
             for (String fileName : untrackedFileNames) {
                 if (desCommitBlobMap.containsKey(fileName)) {
                     System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
@@ -546,7 +548,7 @@ public class Repository {
             }
         }
         //切换到指定的提交
-        checkoutFile(commitID);
+        checkoutFile(commitID); //这个调用有问题
         //移动head
         saveHead(commitID);
         //清空暂存区
