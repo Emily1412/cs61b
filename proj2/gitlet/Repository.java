@@ -461,10 +461,11 @@ public class Repository {
         }
 
         // 反序列化这个commit
-        // 前缀匹配就找到了！！？
+        // 前缀匹配就找到了！！？ 这里有问题唉
         File f = findFileWithPrefix(join(COMMIT_FOLDER, commitID.substring(0, 2)), commitID);
-        if (!f.exists()) {
+        if (f == null || !f.exists()) {
             System.out.println("No commit with that id exists.");
+            return;
         }
         Commit thisCom = readObject(f, Commit.class);
 
@@ -492,6 +493,25 @@ public class Repository {
         }
         //得到目标分支文件表
         String branCommitName = Branch.getBranchHeadCommit(branchName);
+        if (branCommitName == null){
+            //这个分支是个空分支
+            TreeSet<String> untrackedFileNames = UntrackedFileNames(getHead());
+            if (untrackedFileNames.size() != 0) {
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+            }
+            else {
+                checkOutCommit(branCommitName);
+                List<String> allWorkNames = getAllWorkNames();
+                if (allWorkNames.size() != 0) {
+                    for (String fileName : allWorkNames) {
+                        File f2Bdelete = join(PROJECT, fileName);
+                        f2Bdelete.delete();
+                    }
+                }
+                saveCurrBranch(branchName);
+                saveHead(branCommitName);
+            }
+        }
         TreeMap<String, String> branchFileNames = Commit.getCommitBlobMap(branCommitName);
 
         //当前前分支中有未跟踪的文件，并且这些文件会被目标分支覆盖 报错
@@ -509,7 +529,7 @@ public class Repository {
         // 并删除当前分支中有跟踪但目标分支中没有的文件。
         TreeMap<String, String> nowCommitFileNames = Commit.getCommitBlobMap(getHead());
         for (String fileName : nowCommitFileNames.keySet()) {
-            if (!branchFileNames.containsKey(fileName)) {
+            if (branchFileNames == null || !branchFileNames.containsKey(fileName)) {
                 File toBeDeleted = join(PROJECT, fileName);
                 toBeDeleted.delete();
             }
@@ -530,7 +550,12 @@ public class Repository {
             System.out.println("A branch with that name already exists.");
         } else {
             Branch newBranch = new Branch(newBranchName);
-            newBranch.addCommit(getHead());
+            String msg = "initial commit";
+            Instant time = Instant.ofEpochSecond(0);
+            Commit initialCommit = new Commit(msg, time, null, null);
+            String commitName = initialCommit.saveCommit();
+            newBranch.addCommit(commitName);
+            newBranch.saveBranch();
         }
     }
 

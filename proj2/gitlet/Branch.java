@@ -66,7 +66,13 @@ public class Branch implements Serializable {
     public static String getBranchHeadCommit(String branchName) {
         File f = join(BRANCH_FOLDER,branchName);
         Branch b = readObject(f, Branch.class);
-        String commitName = b.commitsList.get(b.commitsList.lastKey());
-        return commitName;
+        //需要判断这个分支是不是空的
+        if (b.commitsList.isEmpty()) {
+            return null;
+        } else {
+            String commitName = b.commitsList.get(b.commitsList.lastKey());
+            return commitName;
+        }
+
     }
 }
