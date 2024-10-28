@@ -26,7 +26,12 @@ public class Main {
                     // TODO: handle the `add [filename]` command
                     break;
                 case "commit":
-                    Repository.commit(args[1]);
+                    if (args.length != 2) {
+                        System.out.println("Please enter a commit message.");
+                    } else {
+                        Repository.commit(args[1]);
+                    }
+
                     break;
                 case "rm":
                     Repository.rm(args[1]);

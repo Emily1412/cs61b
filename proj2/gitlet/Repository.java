@@ -187,6 +187,7 @@ public class Repository {
         }
         if (msg.equals("")) {
             System.out.println("Please enter a commit message.");
+            return;
         }
         //创建一个新的commit with msg & time
         String[] parent;
