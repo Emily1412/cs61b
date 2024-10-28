@@ -33,6 +33,8 @@ public class Commit implements Serializable {
 
     /** The message of this Commit. */
     static final File COMMIT_FOLDER = join(".gitlet", "commits");
+    static final File ADDITIONS_FOLDER = join(".gitlet/staging_area","additions");
+    static final File REMOVAL_FOLDER = join(".gitlet/staging_area", "removals");
     public static final File PROJECT = new File(System.getProperty("user.dir"));
     private String message;
     private Instant commitTime;
@@ -175,17 +177,28 @@ public class Commit implements Serializable {
         allNames.remove("pom.xml");
         return allNames;
     }
+
+    //未被跟踪的文件指的是 既不在stageing area也不再头commitblob里的文件
     public static boolean ifHasUntrackedFile(String CommitName) {
         //得到当前工作目录中的所有文件
         List<String> AllNames = getAllWorkNames();
 
         TreeMap<String, String> blobsmap = getCommitBlobMap(CommitName);
 
+        //得到暂存区
+        File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
+        addition adt = readObject(adtFile, addition.class);
+        TreeMap<String,String> addTreeMap = adt.getTreeMap();
+        File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
+        Removal rmval = readObject(rmvalFile, Removal.class);
+        TreeMap<String,String> rmvalTreeMap = rmval.getRemovalsFile();
         //和当前这个commit里的blobmap进行比较
         if (AllNames != null){
             for (String fileName : AllNames) {
                 if (!blobsmap.containsKey(fileName)) {
-                    return true; //说明当前commit里面没有这个工作目录里的文件
+                    if (!rmvalTreeMap.containsKey(fileName) && !addTreeMap.containsKey(fileName)) {
+                        return true; //说明当前commit和stagingarea里面没有这个工作目录里的文件
+                    }
                 }
             }
         }
@@ -205,10 +218,21 @@ public class Commit implements Serializable {
         //得到这个commit的blobMap
         TreeMap<String, String> blobsmap = getCommitBlobMap(thisCommit);
         TreeSet<String> untrackedFileNames = new TreeSet<>();
+
+        //得到暂存区
+        File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
+        addition adt = readObject(adtFile, addition.class);
+        TreeMap<String,String> addTreeMap = adt.getTreeMap();
+        File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
+        Removal rmval = readObject(rmvalFile, Removal.class);
+        TreeMap<String,String> rmvalTreeMap = rmval.getRemovalsFile();
+
         //如果有工作目录中的文件不在这个commit里，就加入到结果集中
         for (String fileName : AllNames) {
             if (blobsmap == null || !blobsmap.containsKey(fileName)) {
-                untrackedFileNames.add(fileName);
+                if (!rmvalTreeMap.containsKey(fileName) && !addTreeMap.containsKey(fileName)) {
+                    untrackedFileNames.add(fileName);
+                }
             }
         }
         return untrackedFileNames;

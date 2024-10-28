@@ -261,7 +261,7 @@ public class Repository {
         //如果文件被当前提交跟踪 (已经 commit)，`rm` 会在暂存区标记其为删除，并从工作目录中删除。
         File head = HEAD;
         TreeMap<String, String> headComBlobMap = getCommitBlobMap(getHead());
-        if (headComBlobMap.containsKey(fileName)) {
+        if (headComBlobMap != null && headComBlobMap.containsKey(fileName)) {
             File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
             Removal rmval = readObject(rmvalFile, Removal.class);
             rmval.addFile(headComBlobMap.get(fileName), fileName);
