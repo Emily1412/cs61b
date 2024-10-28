@@ -330,12 +330,17 @@ public class Repository {
             return;
         }
         List<String> allCommitNames = getAllCommitNames();
+        boolean flag = false;
         for (String commitName : allCommitNames) {
             File f = join(COMMIT_FOLDER, commitName.substring(0, 2), commitName);
             Commit thisCom = readObject(f, Commit.class);
             if (thisCom.getMessage().equals(msg)) {
                 System.out.println(commitName);
+                flag = true;
             }
+        }
+        if (flag == false) {
+            System.out.println("Found no commit with that message.");
         }
     }
 

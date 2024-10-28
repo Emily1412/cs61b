@@ -17,14 +17,13 @@ import java.util.TreeSet;
 
 
 /** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
+ *
  *  does at a high level.
  *
  *  @author Emily
  */
 public class Commit implements Serializable {
     /**
-     * TODO: add instance variables here.
      *
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
@@ -33,7 +32,7 @@ public class Commit implements Serializable {
 
     /** The message of this Commit. */
     static final File COMMIT_FOLDER = join(".gitlet", "commits");
-    static final File ADDITIONS_FOLDER = join(".gitlet/staging_area","additions");
+    static final File ADDITIONS_FOLDER = join(".gitlet/staging_area", "additions");
     static final File REMOVAL_FOLDER = join(".gitlet/staging_area", "removals");
     public static final File PROJECT = new File(System.getProperty("user.dir"));
     private String message;
@@ -107,19 +106,12 @@ public class Commit implements Serializable {
         return filename;
     }
 
-    public void removeBlob(String FileName){
-        if (blobsmap != null){
-            blobsmap.remove(FileName);
+    public void removeBlob(String fileName) {
+        if (blobsmap != null) {
+            blobsmap.remove(fileName);
         }
     }
 
-    public boolean ifExistsBlob(String FileName) {
-        //一定要注意空指针访问问题
-        if (blobsmap == null) {
-            return false;
-        }
-        return blobsmap.containsKey(FileName);
-    }
 
 
     public static List<String> getwantedCommit(String prefix) {
@@ -207,14 +199,14 @@ public class Commit implements Serializable {
 
     public static TreeMap<String, String> getCommitBlobMap(String CommitName) {
         // 得到当前commit
-        File f = join(COMMIT_FOLDER, CommitName.substring(0,2),CommitName);
+        File f = join(COMMIT_FOLDER, CommitName.substring(0, 2),CommitName);
         Commit thisCommit = readObject(f, Commit.class);
         TreeMap<String, String> blobsmap = thisCommit.getBlobsMap();
         return blobsmap;
     }
 
-    public static void checkOutCommit(String CommitName) {
-        TreeMap<String, String> thisCommitBlobMap = getCommitBlobMap(CommitName);
+    public static void checkOutCommit(String commitName) {
+        TreeMap<String, String> thisCommitBlobMap = getCommitBlobMap(commitName);
         for (String fileName : thisCommitBlobMap.keySet()) {
             String thisBlobName = thisCommitBlobMap.get(fileName);
             //逐个把blob恢复到工作目录中

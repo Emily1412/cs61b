@@ -51,15 +51,24 @@ public class Main {
                 case "checkout":
                     // 根据不同的参数数量来处理 checkout 命令
                     if (args.length == 3 && args[1].equals("--")) {
-                        // 处理 "checkout -- [file name]" 情况
-                        Repository.checkoutFile(args[2]);
-                    } else if (args.length == 4 && args[2].equals("--")) {
-                        // 处理 "checkout [commit id] -- [file name]" 情况
-                        Repository.checkoutFileFromCommit(args[1], args[3]);
+                        if (!args[1].equals("--")) {
+                            System.out.println("Incorrect operands.");
+                        } else {
+                            // 处理 "checkout -- [file name]" 情况
+                            Repository.checkoutFile(args[2]);
+                        }
+                    } else if (args.length == 4) {
+                        if (!args[2].equals("--")) {
+                            System.out.println("Incorrect operands.");
+                        } else {
+                            // 处理 "checkout [commit id] -- [file name]" 情况
+                            Repository.checkoutFileFromCommit(args[1], args[3]);
+                        }
                     } else if (args.length == 2) {
                         // 处理 "checkout [branch name]" 情况
                         Repository.checkoutBranch(args[1]);
                     }
+                    break;
                 case "branch":
                     Repository.branch(args[1]);
                     break;

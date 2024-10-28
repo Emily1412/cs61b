@@ -18,18 +18,19 @@ public class addition implements Serializable {
     TreeMap<String, String> additionFiles = new TreeMap<>();
 
     //创建示例对象 需要保存的！
-    public addition(){
+    public addition() {
         additionFiles = new TreeMap<>();
     }
 
-    static final File ADDITIONS_FOLDER = join(".gitlet/staging_area","additions");
+    static final File ADDITIONS_FOLDER = join(".gitlet/staging_area", "additions");
 
     //此处需判断文件名一致，且内容一致
      boolean ifExists(String fileName) {
          if (additionFiles == null) {
              return false;
+         } else {
+             return additionFiles.containsKey(fileName);
          }
-         else return additionFiles.containsKey(fileName);
     }
 
     //判断文件的内容一不一样
@@ -61,10 +62,10 @@ public class addition implements Serializable {
 
 
     public String[] allAdditionFilesSHA1() {
-        if (additionFiles != null){
+        if (additionFiles != null) {
             String[] blobFileNames = new String[additionFiles.size()];
             int i = 0;
-            for (String fileName : additionFiles.keySet()){
+            for (String fileName : additionFiles.keySet()) {
                 blobFileNames[i++] = additionFiles.get(fileName);
             }
             return blobFileNames;
@@ -73,14 +74,14 @@ public class addition implements Serializable {
     }
 
     public String[] allOrderedAdditionFiles() {
-        String[] blobFileNames = new String[additionFiles.size()];
-        int i = 0;
-        if (additionFiles != null) {
-            for (String fileName : additionFiles.keySet()) {
-                blobFileNames[i++] = fileName;
-            }
-        }
-        return blobFileNames; //treemap已经按照字典序排好了！
+         String[] blobFileNames = new String[additionFiles.size()];
+         int i = 0;
+         if (additionFiles != null) {
+             for (String fileName : additionFiles.keySet()) {
+                 blobFileNames[i++] = fileName;
+             }
+         }
+         return blobFileNames; //treemap已经按照字典序排好了！
     }
 
     public void clearAdditionArea() {
@@ -101,7 +102,7 @@ public class addition implements Serializable {
     public static boolean isAdditionEmpty() {
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
         addition adt = readObject(adtFile, addition.class);
-        TreeMap<String,String> treeMap = adt.getTreeMap();
+        TreeMap<String, String> treeMap = adt.getTreeMap();
         if (treeMap.size() == 0) {
             return true;
         }
