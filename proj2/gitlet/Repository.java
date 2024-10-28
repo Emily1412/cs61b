@@ -411,6 +411,7 @@ public class Repository {
 
     }
 
+    //切换到当前commit的这个文件
     public static void checkoutFile(String fileName) {
         if (!checkFolder()) {
             System.err.println("There is no .Gitlet folder.");
@@ -548,7 +549,7 @@ public class Repository {
             }
         }
         //切换到指定的提交
-        checkoutFile(commitID); //这个调用有问题
+        Commit.checkOutCommit(commitID);
         //移动head
         saveHead(commitID);
         //清空暂存区

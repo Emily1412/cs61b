@@ -212,6 +212,15 @@ public class Commit implements Serializable {
         TreeMap<String, String> blobsmap = thisCommit.getBlobsMap();
         return blobsmap;
     }
+
+    public static void checkOutCommit(String CommitName) {
+        TreeMap<String, String> thisCommitBlobMap = getCommitBlobMap(CommitName);
+        for (String fileName : thisCommitBlobMap.keySet()) {
+            String thisBlobName = thisCommitBlobMap.get(fileName);
+            //逐个把blob恢复到工作目录中
+            Blob.reviveFile(thisBlobName, fileName);
+        }
+    }
     public static TreeSet<String> UntrackedFileNames(String thisCommit) {
         //得到工作目录文件
         List<String> AllNames = getAllWorkNames();

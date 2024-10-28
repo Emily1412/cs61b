@@ -23,6 +23,7 @@ public class Blob implements Serializable {
 
     static final File BLOB_FOLDER = join(".gitlet", "blobs");
 
+    public static final File PROJECT = new File(System.getProperty("user.dir"));
     private byte[] content;
     //以字节码形式保存文件内容，适用于各种类型的文件
 
@@ -59,6 +60,16 @@ public class Blob implements Serializable {
 
     public String getFileName() {
         return fileName;
+    }
+
+    public static void reviveFile(String blobName, String fileName){
+        File f = new File(BLOB_FOLDER, blobName);
+        Blob thisBlob = readObject(f, Blob.class);
+        byte[] thisByte = thisBlob.getContent();
+        File pjFile = join(PROJECT, fileName);
+        byte[] content = thisBlob.getContent();
+        writeContents(pjFile, content); //是否已经保存？
+
     }
     public static String getSHA1ByFile(File file) {
         Blob b = new Blob(file);
