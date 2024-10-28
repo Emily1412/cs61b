@@ -82,6 +82,20 @@ public class Repository {
         File f = CURRENT_BRANCH;
         return readContentsAsString(f);
     }
+
+    public static File findFileWithPrefix(File folder, String prefix) {
+        // 列出文件夹中的所有文件
+        File[] files = folder.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                // 检查文件名是否以prefix开头
+                if (file.getName().startsWith(prefix)) {
+                    return file; // 找到匹配的文件
+                }
+            }
+        }
+        return null; // 没有找到匹配的文件
+    }
     public static void init() {
         //创建目录结构
         //commits & blobs
@@ -448,7 +462,7 @@ public class Repository {
 
         // 反序列化这个commit
         // 前缀匹配就找到了！！？
-        File f = join(COMMIT_FOLDER, commitID.substring(0, 2), commitID);
+        File f = findFileWithPrefix(join(COMMIT_FOLDER, commitID.substring(0, 2)), commitID);
         if (!f.exists()) {
             System.out.println("No commit with that id exists.");
         }
