@@ -244,8 +244,8 @@ public class Repository {
     public static void rm(String fileName) {
         //如果文件被暂存用于新增，`rm` 会将其从暂存区移除。
         //得到staging area 的addition区域
-        if(GITLET_DIR.exists()){
-            System.err.println("A Gitlet version-control system already exists in the current directory.");
+        if (!checkFolder()){
+            System.err.println("There is no .Gitlet folder.");
             return;
         }
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
@@ -352,8 +352,8 @@ public class Repository {
 
     //展示所有文件的状态 每个板块按照字典序排序
     public static void status() {
-        if(GITLET_DIR.exists()){
-            System.err.println("A Gitlet version-control system already exists in the current directory.");
+        if (!checkFolder()){
+            System.err.println("There is no .Gitlet folder.");
             return;
         }
         System.out.println("=== Branches ===");
@@ -422,8 +422,8 @@ public class Repository {
 
     }
     public static void checkoutFile(String fileName)  {
-        if(GITLET_DIR.exists()){
-            System.err.println("A Gitlet version-control system already exists in the current directory.");
+        if (!checkFolder()){
+            System.err.println("There is no .Gitlet folder.");
             return;
         }
         //从当前head里面取出来这个commit
@@ -439,8 +439,8 @@ public class Repository {
     }
 
     public static void checkoutFileFromCommit(String commitID, String fileName) {
-        if(GITLET_DIR.exists()){
-            System.err.println("A Gitlet version-control system already exists in the current directory.");
+        if (!checkFolder()){
+            System.err.println("There is no .Gitlet folder.");
             return;
         }
         // 反序列化这个commit
@@ -456,8 +456,8 @@ public class Repository {
     }
 
     public static void checkoutBranch(String branchName) {
-        if(GITLET_DIR.exists()){
-            System.err.println("A Gitlet version-control system already exists in the current directory.");
+        if (!checkFolder()){
+            System.err.println("There is no .Gitlet folder.");
             return;
         }
         File f = join(BRANCH_FOLDER, branchName);
@@ -485,8 +485,8 @@ public class Repository {
 
     //创建新的branch
     public static void branch(String newBranchName) {
-        if(GITLET_DIR.exists()){
-            System.err.println("A Gitlet version-control system already exists in the current directory.");
+        if (!checkFolder()){
+            System.err.println("There is no .Gitlet folder.");
             return;
         }
         File f = join(BRANCH_FOLDER, newBranchName);
@@ -500,8 +500,8 @@ public class Repository {
     }
 
     public static void rmBranch(String rmBranchName) {
-        if(GITLET_DIR.exists()){
-            System.err.println("A Gitlet version-control system already exists in the current directory.");
+        if (!checkFolder()){
+            System.err.println("There is no .Gitlet folder.");
             return;
         }
         File f = join(BRANCH_FOLDER, rmBranchName);
@@ -527,8 +527,8 @@ public class Repository {
 
     //这个参数是目标的ID 别和当前headID搞混了
     public static void reset(String CommitID) {
-        if(GITLET_DIR.exists()){
-            System.err.println("A Gitlet version-control system already exists in the current directory.");
+        if (!checkFolder()){
+            System.err.println("There is no .Gitlet folder.");
             return;
         }
         //不存在这个commit
