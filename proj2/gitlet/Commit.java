@@ -49,7 +49,8 @@ public class Commit implements Serializable {
         parentsSHA1 = new String[2];
     }
 
-    public Commit(String message, Instant commitTime, TreeMap<String, String> blobsmap, String[] parents) {
+    public Commit(String message, Instant commitTime,
+                  TreeMap<String, String> blobsmap, String[] parents) {
         this.message = message;
         this.commitTime = commitTime;
         if (blobsmap == null) {

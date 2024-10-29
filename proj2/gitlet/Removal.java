@@ -29,7 +29,7 @@ public class Removal implements Serializable {
     }
 
     public void remove(String fileName) {
-        if (removalsFile != null){
+        if (removalsFile != null) {
             removalsFile.remove(fileName);
         }
         saveRemovalArea();
@@ -42,10 +42,10 @@ public class Removal implements Serializable {
         saveRemovalArea();
     }
 
-    public void addFile(String SHA1, String name) {
+    public void addFile(String sha1, String name) {
         //从f这里取哈希名，从name这里取文件名  好反直觉。。
-        if (SHA1 != null && removalsFile != null) {
-            removalsFile.put(name, SHA1);
+        if (sha1 != null && removalsFile != null) {
+            removalsFile.put(name, sha1);
         }
         saveRemovalArea();
 
@@ -59,7 +59,7 @@ public class Removal implements Serializable {
     public static boolean isRmvalEmpty() {
         File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
         Removal rmval = readObject(rmvalFile, Removal.class);
-        TreeMap<String,String> treeMap = rmval.getRemovalsFile();
+        TreeMap<String, String> treeMap = rmval.getRemovalsFile();
         if (treeMap.size() == 0) {
             return true;
         }
@@ -70,7 +70,7 @@ public class Removal implements Serializable {
     }
 
     public String[] allRemovalFilesSHA1() {
-        if (removalsFile != null){
+        if (removalsFile != null) {
             String[] fileNames = new String[removalsFile.size()];
             int i = 0;
             for (String fileName : removalsFile.keySet()) {

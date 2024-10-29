@@ -499,7 +499,7 @@ public class Repository {
         }
         //得到目标分支文件表
         String branCommitName = Branch.getBranchHeadCommit(branchName);
-       /* if (branCommitName == null) { //这个可删 因为不可能是null了
+        /* if (branCommitName == null) { //这个可删 因为不可能是null了
             //这个分支是个空分支
             TreeSet<String> untrackedFileNames = untrackedFileNames(getHead());
             if (untrackedFileNames.size() != 0) {
@@ -534,7 +534,7 @@ public class Repository {
         //全部覆盖工作目录中的文件（如果存在相同文件）
         // 并删除当前分支中有跟踪但目标分支中没有的文件。
         TreeMap<String, String> nowCommitFileNames = Commit.getCommitBlobMap(getHead());
-        if (nowCommitFileNames != null){
+        if (nowCommitFileNames != null) {
             for (String fileName : nowCommitFileNames.keySet()) {
                 if (branchFileNames == null || !branchFileNames.containsKey(fileName)) {
                     File toBeDeleted = join(PROJECT, fileName);

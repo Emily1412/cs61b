@@ -71,7 +71,9 @@ public class Branch implements Serializable {
         if (b.commitsList.isEmpty()) {
             return null;
         } else {
-            if (b.resetCommit != null){
+            //注意在java里字符串为空和为null是不一样的
+            //比较字符串一定要用equal
+            if (!b.resetCommit.equals("")) {
                 return b.resetCommit;
             }
             String commitName = b.commitsList.get(b.commitsList.lastKey());
