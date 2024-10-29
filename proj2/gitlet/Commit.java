@@ -36,6 +36,7 @@ public class Commit implements Serializable {
     static final File REMOVAL_FOLDER = join(".gitlet/staging_area", "removals");
     public static final File PROJECT = new File(System.getProperty("user.dir"));
     private String message;
+    private static final long serialVersionUID = 1L;
     private Instant commitTime;
     private TreeMap<String, String> blobsmap;
 

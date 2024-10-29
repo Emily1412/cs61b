@@ -96,6 +96,15 @@ public class Repository {
         }
         return null; // 没有找到匹配的文件
     }
+
+    public static String createInitCommit() {
+        String msg = "initial commit";
+        Instant time = Instant.ofEpochSecond(0);
+        Commit initialCommit = new Commit(msg, time, null, null);
+        //写入初始commit到文件中
+        String sha1Name = initialCommit.saveCommit();
+        return sha1Name;
+    }
     public static void init() {
         //创建目录结构
         //commits & blobs
@@ -118,12 +127,9 @@ public class Repository {
         Removal removalArea = new Removal();
         removalArea.saveRemovalArea();
 
-        //创建初始commit
-        String msg = "initial commit";
-        Instant time = Instant.ofEpochSecond(0);
-        Commit initialCommit = new Commit(msg, time, null, null);
-        //写入初始commit到文件中
-        String sha1Name = initialCommit.saveCommit();
+
+        //创建初始的commit
+        String sha1Name = createInitCommit();
         //创建头指针
         head = sha1Name;
         saveHead(sha1Name);
@@ -493,7 +499,7 @@ public class Repository {
         }
         //得到目标分支文件表
         String branCommitName = Branch.getBranchHeadCommit(branchName);
-        if (branCommitName == null) {
+        if (branCommitName == null) { //这个可删 因为不可能是null了
             //这个分支是个空分支
             TreeSet<String> untrackedFileNames = untrackedFileNames(getHead());
             if (untrackedFileNames.size() != 0) {
@@ -515,7 +521,7 @@ public class Repository {
 
         //当前前分支中有未跟踪的文件，并且这些文件会被目标分支覆盖 报错
         TreeSet<String> untrackedFileNames = untrackedFileNames(getHead());
-        if (untrackedFileNames.size() != 0) {
+        if (branchFileNames != null && untrackedFileNames.size() != 0) {
             for (String fileName : untrackedFileNames) {
                 if (branchFileNames.containsKey(fileName)) {
                     System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
@@ -527,12 +533,15 @@ public class Repository {
         //全部覆盖工作目录中的文件（如果存在相同文件）
         // 并删除当前分支中有跟踪但目标分支中没有的文件。
         TreeMap<String, String> nowCommitFileNames = Commit.getCommitBlobMap(getHead());
-        for (String fileName : nowCommitFileNames.keySet()) {
-            if (branchFileNames == null || !branchFileNames.containsKey(fileName)) {
-                File toBeDeleted = join(PROJECT, fileName);
-                toBeDeleted.delete();
+        if (nowCommitFileNames != null){
+            for (String fileName : nowCommitFileNames.keySet()) {
+                if (branchFileNames == null || !branchFileNames.containsKey(fileName)) {
+                    File toBeDeleted = join(PROJECT, fileName);
+                    toBeDeleted.delete();
+                }
             }
         }
+
         //更改当前branch名字
         saveCurrBranch(branchName);
         saveHead(branCommitName);
@@ -568,7 +577,8 @@ public class Repository {
             System.out.println("A branch with that name does not exist.");
             return;
         }
-        if (rmBranchName.equals(getCurrentBranch())) {
+        String cB = getCurrentBranch();
+        if (rmBranchName.equals(cB)) {
             System.out.println("Cannot remove the current branch.");
             return;
         }

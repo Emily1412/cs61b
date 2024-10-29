@@ -25,20 +25,20 @@ public class addition implements Serializable {
     static final File ADDITIONS_FOLDER = join(".gitlet/staging_area", "additions");
 
      //此处需判断文件名一致，且内容一致
-     boolean ifExists(String fileName) {
-         if (additionFiles == null) {
-             return false;
-         } else {
-             return additionFiles.containsKey(fileName);
-         }
+    boolean ifExists(String fileName) {
+        if (additionFiles == null) {
+            return false;
+        } else {
+            return additionFiles.containsKey(fileName);
+        }
     }
 
     //判断文件的内容一不一样
     boolean sameSHA1(String fileName, String compareSHA1) {
-         if (additionFiles != null && additionFiles.containsKey(fileName)) {
-             return compareSHA1.equals(additionFiles.get(fileName));
-         }
-         return false;
+        if (additionFiles != null && additionFiles.containsKey(fileName)) {
+            return compareSHA1.equals(additionFiles.get(fileName));
+        }
+        return false;
     }
 
 
@@ -74,19 +74,19 @@ public class addition implements Serializable {
     }
 
     public String[] allOrderedAdditionFiles() {
-         String[] blobFileNames = new String[additionFiles.size()];
-         int i = 0;
-         if (additionFiles != null) {
-             for (String fileName : additionFiles.keySet()) {
-                 blobFileNames[i++] = fileName;
-             }
-         }
-         return blobFileNames; //treemap已经按照字典序排好了！
-    }
+       String[] blobFileNames = new String[additionFiles.size()];
+       int i = 0;
+       if (additionFiles != null) {
+           for (String fileName : additionFiles.keySet()) {
+              blobFileNames[i++] = fileName;
+           }
+       }
+       return blobFileNames; //treemap已经按照字典序排好了！
+   }
 
     public void clearAdditionArea() {
-         additionFiles.clear();
-         saveAdditionArea();
+        additionFiles.clear();
+        saveAdditionArea();
     }
 
     public void saveAdditionArea() {
@@ -96,7 +96,7 @@ public class addition implements Serializable {
 
     //得到整个map
     public TreeMap<String, String> getTreeMap() {
-         return additionFiles;
+        return additionFiles;
     }
 
     public static boolean isAdditionEmpty() {
