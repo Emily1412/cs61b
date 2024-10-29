@@ -499,7 +499,7 @@ public class Repository {
         }
         //得到目标分支文件表
         String branCommitName = Branch.getBranchHeadCommit(branchName);
-        if (branCommitName == null) { //这个可删 因为不可能是null了
+       /* if (branCommitName == null) { //这个可删 因为不可能是null了
             //这个分支是个空分支
             TreeSet<String> untrackedFileNames = untrackedFileNames(getHead());
             if (untrackedFileNames.size() != 0) {
@@ -517,6 +517,7 @@ public class Repository {
                 saveHead(branCommitName);
             }
         }
+        */
         TreeMap<String, String> branchFileNames = Commit.getCommitBlobMap(branCommitName);
 
         //当前前分支中有未跟踪的文件，并且这些文件会被目标分支覆盖 报错
@@ -558,11 +559,12 @@ public class Repository {
             System.out.println("A branch with that name already exists.");
         } else {
             Branch newBranch = new Branch(newBranchName);
-            String msg = "initial commit";
-            Instant time = Instant.ofEpochSecond(0);
-            Commit initialCommit = new Commit(msg, time, null, null);
-            String commitName = initialCommit.saveCommit();
-            newBranch.addCommit(commitName);
+            String headComName = getHead();
+            newBranch.addCommit(headComName);
+//            String msg = "initial commit";
+//            Instant time = Instant.ofEpochSecond(0);
+//            Commit initialCommit = new Commit(msg, time, null, null);
+//            String commitName = initialCommit.saveCommit();
             newBranch.saveBranch();
         }
     }

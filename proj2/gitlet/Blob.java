@@ -20,7 +20,7 @@ public class Blob implements Serializable {
     // String thisSHA1;  作为名字
 
     //此类存储时的名字是确定文件唯一性的ID属性
-
+    static final int NUM = 10;
     static final File BLOB_FOLDER = join(".gitlet", "blobs");
 
     public static final File PROJECT = new File(System.getProperty("user.dir"));
@@ -34,10 +34,10 @@ public class Blob implements Serializable {
     }
     private Blob() {
         fileName = "defualt.txt";
-        final File CWD = new File(System.getProperty("user.dir"));
-        File f = join(CWD, ".gitlet", "Blobs");
+        final File cwd = new File(System.getProperty("user.dir"));
+        File f = join(cwd, ".gitlet", "Blobs");
         f.mkdirs();
-        content = new byte[10];
+        content = new byte[NUM];
     }
 
     public String saveBlob() {
@@ -62,7 +62,7 @@ public class Blob implements Serializable {
         return fileName;
     }
 
-    public static void reviveFile(String blobName, String fileName){
+    public static void reviveFile(String blobName, String fileName) {
         File f = new File(BLOB_FOLDER, blobName);
         Blob thisBlob = readObject(f, Blob.class);
         byte[] thisByte = thisBlob.getContent();

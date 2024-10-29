@@ -24,7 +24,7 @@ public class addition implements Serializable {
 
     static final File ADDITIONS_FOLDER = join(".gitlet/staging_area", "additions");
 
-     //此处需判断文件名一致，且内容一致
+    //此处需判断文件名一致，且内容一致
     boolean ifExists(String fileName) {
         if (additionFiles == null) {
             return false;
@@ -44,11 +44,11 @@ public class addition implements Serializable {
 
 
     public void remove(String filename) {
-         if (additionFiles != null) {
-             additionFiles.remove(filename);
-         }
-         saveAdditionArea();
-     }
+        if (additionFiles != null) {
+            additionFiles.remove(filename);
+        }
+        saveAdditionArea();
+    }
 
     //这里一定要记得第二个传整个文件名！！
     public void addFile(File f, String name) {
@@ -74,15 +74,15 @@ public class addition implements Serializable {
     }
 
     public String[] allOrderedAdditionFiles() {
-       String[] blobFileNames = new String[additionFiles.size()];
-       int i = 0;
-       if (additionFiles != null) {
-           for (String fileName : additionFiles.keySet()) {
-              blobFileNames[i++] = fileName;
-           }
-       }
-       return blobFileNames; //treemap已经按照字典序排好了！
-   }
+        String[] blobFileNames = new String[additionFiles.size()];
+        int i = 0;
+        if (additionFiles != null) {
+            for (String fileName : additionFiles.keySet()) {
+               blobFileNames[i++] = fileName;
+            }
+        }
+        return blobFileNames; //treemap已经按照字典序排好了！
+    }
 
     public void clearAdditionArea() {
         additionFiles.clear();
