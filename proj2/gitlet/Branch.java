@@ -19,11 +19,12 @@ public class Branch implements Serializable {
     TreeMap<Integer, String> commitsList;
     //最后面的就是头结点
     String branchName;
-
+    String resetCommit;
     static final File BRANCH_FOLDER = join(".gitlet", "branches");
     public Branch(String branchName) {
         commitsList = new TreeMap<Integer, String>();
         this.branchName = branchName;
+        resetCommit = "";
     }
     public TreeMap<Integer, String> getCommits() {
         return commitsList;
@@ -70,6 +71,9 @@ public class Branch implements Serializable {
         if (b.commitsList.isEmpty()) {
             return null;
         } else {
+            if (b.resetCommit != null){
+                return b.resetCommit;
+            }
             String commitName = b.commitsList.get(b.commitsList.lastKey());
             return commitName;
         }

@@ -633,6 +633,14 @@ public class Repository {
         Commit.checkOutCommit(commitID);
         //移动head
         saveHead(commitID);
+
+        //保存这个分支的reset信息
+        String thisBranchName = getCurrentBranch();
+        File thisBranchFile = join(BRANCH_FOLDER, thisBranchName);
+        Branch thisBranch = readObject(thisBranchFile, Branch.class);
+        thisBranch.resetCommit = commitID;
+        thisBranch.saveBranch();
+
         //清空暂存区
         File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
         Removal rmval = readObject(rmvalFile, Removal.class);
