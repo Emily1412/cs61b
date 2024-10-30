@@ -8,17 +8,17 @@ import java.util.TreeMap;
 import static gitlet.Utils.*;
 
 /**
- * ClassName: addition
+ * ClassName: Addition
  *
  * @author Emily
  * @version 1.0
  * @Create 2024/10/23 21:41
  */
-public class addition implements Serializable {
+public class Addition implements Serializable {
     TreeMap<String, String> additionFiles = new TreeMap<>();
 
     //创建示例对象 需要保存的！
-    public addition() {
+    public Addition() {
         additionFiles = new TreeMap<>();
     }
 
@@ -108,7 +108,7 @@ public class addition implements Serializable {
     //判断addition区域有没有文件
     public static boolean isAdditionEmpty() {
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
-        addition adt = readObject(adtFile, addition.class);
+        Addition adt = readObject(adtFile, Addition.class);
         TreeMap<String, String> treeMap = adt.getTreeMap();
         if (treeMap.size() == 0) {
             return true;

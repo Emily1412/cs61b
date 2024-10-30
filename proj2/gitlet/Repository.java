@@ -13,7 +13,7 @@ import java.time.ZonedDateTime;
 
 import static gitlet.Commit.*;
 import static gitlet.Utils.*;
-import static gitlet.addition.isAdditionEmpty;
+
 import static gitlet.Removal.isRmvalEmpty;
 
 
@@ -116,7 +116,7 @@ public class Repository {
         //staging area
         File additionsFolder = new File(GITLET_DIR, "staging_area/additions");
         additionsFolder.mkdirs();
-        addition additionArea = new addition();
+        Addition additionArea = new Addition();
         additionArea.saveAdditionArea();
         File removalsFolder = new File(GITLET_DIR, "staging_area/removals");
         removalsFolder.mkdirs();
@@ -161,7 +161,7 @@ public class Repository {
         File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
         Removal rmval = readObject(rmvalFile, Removal.class);
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
-        addition adt = readObject(adtFile, addition.class);
+        Addition adt = readObject(adtFile, Addition.class);
 
         //取消已经标记为删除文件的暂存
         if (rmval.ifExists(fileName)) {
@@ -203,7 +203,7 @@ public class Repository {
             return;
         }
 
-        if (isRmvalEmpty() && isAdditionEmpty()) {
+        if (isRmvalEmpty() && Addition.isAdditionEmpty()) {
             System.out.println("No changes added to the commit.");
             return;
         }
@@ -220,7 +220,7 @@ public class Repository {
         // 把addition的blob加入到commit blobset里面
         //得到additionArea
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
-        addition adt = readObject(adtFile, addition.class);
+        Addition adt = readObject(adtFile, Addition.class);
         TreeMap<String, String> treeMap = adt.getTreeMap();
         //直接copy
         for (String fileName : treeMap.keySet()) {
@@ -272,7 +272,7 @@ public class Repository {
         }
 
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
-        addition adt = readObject(adtFile, addition.class);
+        Addition adt = readObject(adtFile, Addition.class);
         //SFN是当前工作目录下的这个文件本身（如果存在的话）
         File sfn = join(PROJECT, fileName);
         if (adt.ifExists(fileName)) {
@@ -387,7 +387,7 @@ public class Repository {
 
         System.out.println("=== Staged Files ===");
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
-        addition adt = readObject(adtFile, addition.class);
+        Addition adt = readObject(adtFile, Addition.class);
         String[] stageFiles = adt.allOrderedAdditionFiles();
         if (stageFiles != null) {
             for (String fileName : stageFiles) {
@@ -624,7 +624,7 @@ public class Repository {
         File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
         Removal rmval = readObject(rmvalFile, Removal.class);
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
-        addition adt = readObject(adtFile, addition.class);
+        Addition adt = readObject(adtFile, Addition.class);
         adt.clearAdditionArea();
         rmval.clearRemovalArea();
     }
@@ -663,8 +663,8 @@ public class Repository {
         }
     }
 
-    public static void merge(String branchName) {
-        if (!isAdditionEmpty() || !isRmvalEmpty()) {
+    public static void dealWithErrMerge(String branchName) {
+        if (!Addition.isAdditionEmpty() || !isRmvalEmpty()) {
             System.out.println("You have uncommitted changes.");
             return;
         }
@@ -677,20 +677,21 @@ public class Repository {
             System.out.println("Cannot merge a branch with itself.");
             return;
         }
-        // 合并会导致未跟踪的文件被覆盖或者删除？
-        // 获得当前未跟踪的文件
-        // 合并分支commitHead 的文件
-        // 判断是否会被删除
 
         //当前分支的名字
         String currentBranch = getCurrentBranch();
         String curComHead = Branch.getBranchHeadCommit(currentBranch);
-        if (ifHasUntrackedFile(curComHead)) { //为什么会报这个错
+        if (ifHasUntrackedFile(curComHead)) {
             System.out.println("There is an "
                     + "untracked file in the way; delete it, "
                     + "or add and commit it first.");
             return;
         }
+    }
+    public static void merge(String branchName) {
+        dealWithErrMerge(branchName);
+        String currentBranch = getCurrentBranch();
+        String curComHead = Branch.getBranchHeadCommit(currentBranch);
         String mergedBranHeadCom = Branch.getBranchHeadCommit(branchName);
         File f1 = join(BRANCH_FOLDER, currentBranch);
         File f2 = join(BRANCH_FOLDER, branchName);
@@ -741,7 +742,7 @@ public class Repository {
         Commit newCommit = new Commit(msg, time, blobs, parent);
         String newHead = newCommit.saveCommit();
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
-        addition adt = readObject(adtFile, addition.class);
+        Addition adt = readObject(adtFile, Addition.class);
         adt.clearAdditionArea();
         File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
         Removal rmval = readObject(rmvalFile, Removal.class);
@@ -770,7 +771,7 @@ public class Repository {
                             currHeadBlobs.put(fileName, mergedBlob);
                             //还要将这个加入addition区域
                             File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
-                            addition adt = readObject(adtFile, addition.class);
+                            Addition adt = readObject(adtFile, Addition.class);
                             adt.addFilebySha1(fileName, mergedBlob);
                         }
                         //情况2 ancestor和mergeto一样 当前的改了
@@ -818,7 +819,7 @@ public class Repository {
                         currHeadBlobs.put(fileName, mergeToBlob);
                         // 还要加到addition里面
                         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
-                        addition adt = readObject(adtFile, addition.class);
+                        Addition adt = readObject(adtFile, Addition.class);
                         adt.addFilebySha1(fileName, mergeToBlob);
                     }
                 }
@@ -849,7 +850,7 @@ public class Repository {
         Blob b = new Blob(f3);
         String sha1 = b.saveBlob();
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
-        addition adt = readObject(adtFile, addition.class);
+        Addition adt = readObject(adtFile, Addition.class);
         adt.addFilebySha1(fileName, sha1);
         f.delete();
     }

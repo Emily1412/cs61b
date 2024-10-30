@@ -181,7 +181,7 @@ public class Commit implements Serializable {
 
         //得到暂存区
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
-        addition adt = readObject(adtFile, addition.class);
+        Addition adt = readObject(adtFile, Addition.class);
         TreeMap<String, String> addTreeMap = adt.getTreeMap();
         File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
         Removal rmval = readObject(rmvalFile, Removal.class);
@@ -228,7 +228,7 @@ public class Commit implements Serializable {
 
         //得到暂存区
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
-        addition adt = readObject(adtFile, addition.class);
+        Addition adt = readObject(adtFile, Addition.class);
         TreeMap<String, String> addTreeMap = adt.getTreeMap();
         File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
         Removal rmval = readObject(rmvalFile, Removal.class);
