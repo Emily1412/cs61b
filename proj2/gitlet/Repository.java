@@ -740,6 +740,12 @@ public class Repository {
         String[] parent = {getHead(), branchName};
         Commit newCommit = new Commit(msg, time, blobs, parent);
         String newHead = newCommit.saveCommit();
+        File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
+        addition adt = readObject(adtFile, addition.class);
+        adt.clearAdditionArea();
+        File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
+        Removal rmval = readObject(rmvalFile, Removal.class);
+        rmval.clearRemovalArea();
         saveHead(newHead);
     }
     public static TreeMap<String, String> mergeHelper(String curComHead,

@@ -147,7 +147,7 @@ class Utils {
     /** Return an object of type T read from FILE, casting it to EXPECTEDCLASS.
      *  Throws IllegalArgumentException in case of problems. */
     //从一个文件中读对象
-    static<T extends Serializable> T readObject(File file,
+    static <T extends Serializable> T readObject(File file,
                                                  Class<T> expectedClass) {
         try {
             ObjectInputStream in =
