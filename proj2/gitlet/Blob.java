@@ -42,10 +42,10 @@ public class Blob implements Serializable {
 
     public String saveBlob() {
         byte[] thisByte = serialize(this);
-        String fileName = sha1(thisByte); //哈希编码作为blob的名字
-        File f = join(BLOB_FOLDER, fileName);
+        String blobFileName = sha1(thisByte); //哈希编码作为blob的名字
+        File f = join(BLOB_FOLDER, blobFileName);
         writeObject(f, this);
-        return fileName;
+        return blobFileName;
     }
 
 

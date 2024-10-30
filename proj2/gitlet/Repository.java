@@ -510,7 +510,7 @@ public class Repository {
             for (String fileName : untrackedFileNames) {
                 if (branchFileNames.containsKey(fileName)) {
                     System.out.println
-                    ("There is an untracked file in the way; delete it, or add and commit it first.");
+                        ("There is an untracked file in the way; delete it, or add and commit it first.");
                 }
             }
         }
@@ -598,7 +598,7 @@ public class Repository {
             for (String fileName : untrackedFileNames) {
                 if (desCommitBlobMap.containsKey(fileName)) {
                     System.out.println
-                    ("There is an untracked file in the way; delete it, or add and commit it first.");
+                        ("There is an untracked file in the way; delete it, or add and commit it first.");
                     return;
                 }
             }
@@ -688,6 +688,11 @@ public class Repository {
         //当前分支的名字
         String currentBranch = getCurrentBranch();
         String curComHead = Branch.getBranchHeadCommit(currentBranch);
+        if (ifHasUntrackedFile(curComHead)) {
+            System.out.println
+                ("There is an untracked file in the way; delete it, or add and commit it first.");
+            return;
+        }
         String mergedBranHeadCom = Branch.getBranchHeadCommit(branchName);
         File f1 = join(BRANCH_FOLDER, currentBranch);
         File f2 = join(BRANCH_FOLDER, branchName);
@@ -710,7 +715,7 @@ public class Repository {
             if (thisValue.equals(mergedBranHeadCom)) {
                 //是祖先！
                 System.out.println
-                ("Given branch is an ancestor of the current branch.");
+                    ("Given branch is an ancestor of the current branch.");
                 return;
             }
         }
