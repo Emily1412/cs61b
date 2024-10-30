@@ -57,13 +57,7 @@ public class Repository {
         }
         return true;
     }
-    static boolean checkFolder() {
-        File f = new File(CWD, ".gitlet");
-        if (f.exists() && f.isDirectory()) {
-            return true;
-        }
-        return false;
-    }
+
     static void saveHead(String commitSHA1) {
         File f = HEAD;
         writeContents(f, commitSHA1);
@@ -109,8 +103,8 @@ public class Repository {
         //创建目录结构
         //commits & blobs
         if (GITLET_DIR.exists()) {
-            System.err.println
-            ("A Gitlet version-control system already exists in the current directory.");
+            System.err.println("A Gitlet version-control "
+                    + "system already exists in the current directory.");
             return;
         }
         GITLET_DIR.mkdirs();
@@ -218,7 +212,7 @@ public class Repository {
         }
         //创建一个新的commit with msg & time
         String[] parent;
-        String head = getHead();
+        head = getHead();
         parent = new String[]{head}; //这里如果有多个parent怎么办 分支那里重新处理吗
         Commit newCommit = new Commit(msg, Instant.now(), parent);
 
@@ -502,15 +496,17 @@ public class Repository {
         //得到目标分支文件表 commit头
         String branCommitName = Branch.getBranchHeadCommit(branchName);
         //目标文件文件列表
-        TreeMap<String, String> branchFileNames = Commit.getCommitBlobMap(branCommitName);
+        TreeMap<String, String> branchFileNames = getCommitBlobMap(branCommitName);
 
         //当前前分支中有未跟踪的文件，并且这些文件会被目标分支覆盖 报错
         TreeSet<String> untrackedFileNames = untrackedFileNames(getHead());
         if (branchFileNames != null && untrackedFileNames.size() != 0) {
             for (String fileName : untrackedFileNames) {
                 if (branchFileNames.containsKey(fileName)) {
-                    System.out.println
-                        ("There is an untracked file in the way; delete it, or add and commit it first.");
+                    System.out.println("There is an untracked "
+                            + "file in the way; delete it, "
+                            + "or add and commit it first.");
+
                 }
             }
         }
@@ -518,7 +514,7 @@ public class Repository {
         checkOutCommit(branCommitName);
         //全部覆盖工作目录中的文件（如果存在相同文件）
         // 并删除当前分支中有跟踪但目标分支中没有的文件。
-        TreeMap<String, String> nowCommitFileNames = Commit.getCommitBlobMap(getHead());
+        TreeMap<String, String> nowCommitFileNames = getCommitBlobMap(getHead());
         if (nowCommitFileNames != null) {
             for (String fileName : nowCommitFileNames.keySet()) {
                 if (branchFileNames == null || !branchFileNames.containsKey(fileName)) {
@@ -597,8 +593,8 @@ public class Repository {
         if (untrackedFileNames.size() != 0) {
             for (String fileName : untrackedFileNames) {
                 if (desCommitBlobMap.containsKey(fileName)) {
-                    System.out.println
-                        ("There is an untracked file in the way; delete it, or add and commit it first.");
+                    System.out.println("There is an untracked file"
+                        + " in the way; delete it, or add and commit it first.");
                     return;
                 }
             }
@@ -612,7 +608,7 @@ public class Repository {
             }
         }
         //切换到指定的提交
-        Commit.checkOutCommit(commitID);
+        checkOutCommit(commitID);
         //移动head
         saveHead(commitID);
 
@@ -688,9 +684,10 @@ public class Repository {
         //当前分支的名字
         String currentBranch = getCurrentBranch();
         String curComHead = Branch.getBranchHeadCommit(currentBranch);
-        if (ifHasUntrackedFile(curComHead)) {
-            System.out.println
-                ("There is an untracked file in the way; delete it, or add and commit it first.");
+        if (ifHasUntrackedFile(curComHead)) { //为什么会报这个错
+            System.out.println("There is an "
+                    + "untracked file in the way; delete it, "
+                    + "or add and commit it first.");
             return;
         }
         String mergedBranHeadCom = Branch.getBranchHeadCommit(branchName);
@@ -698,8 +695,11 @@ public class Repository {
         File f2 = join(BRANCH_FOLDER, branchName);
         Branch curBranch = readObject(f1, Branch.class);
         Branch mergedBranch = readObject(f2, Branch.class);
+        //现在这个branch的commit列表
         TreeMap<Integer, String> curBranComList = curBranch.getCommits();
+        // mergeto branch的commit列表
         TreeMap<Integer, String> mergedBranComList = mergedBranch.getCommits();
+        // 遍历mergeto branch
         for (Integer key : mergedBranComList.keySet()) {
             String thisValue = mergedBranComList.get(key);
             if (thisValue.equals(curComHead)) {
@@ -710,16 +710,120 @@ public class Repository {
                 return;
             }
         }
+        //遍历现在branch的commitlist
         for (Integer key : curBranComList.keySet()) {
             String thisValue = curBranComList.get(key);
             if (thisValue.equals(mergedBranHeadCom)) {
                 //是祖先！
-                System.out.println
-                    ("Given branch is an ancestor of the current branch.");
+                System.out.println("Given branch is "
+                        + "an ancestor of the current branch.");
                 return;
             }
         }
+        //找到公共祖先！
+        String ancestorCom = "";
+        //反向遍历当前branch的commit列表
+        for (Map.Entry<Integer, String> entry : curBranComList.descendingMap().entrySet()) {
+           String thisCommit = entry.getValue();
+           if (Branch.ContainValue(mergedBranComList, thisCommit)) {
+               ancestorCom = thisCommit;
+               break;
+           }
+        }
+        // 对当前这三者的文件进行combine curComHead ancestorCom mergedBranHeadCom
+        TreeMap<String, String> blobs = mergeHelper(curComHead, ancestorCom, mergedBranHeadCom);
 
+        //创建一个新的commit!
+        String msg = "Merged " + branchName + " into " + getHead() + ".";
+        Instant time = Instant.now();
+        String[] parent = {getHead(), branchName};
+        Commit newCommit = new Commit(msg, time, blobs, parent);
+        newCommit.saveCommit();
+    }
+    public static TreeMap<String, String> mergeHelper(String curComHead,
+                                   String ancestorCom,
+                                   String mergedBranHeadCom) {
+        //还原commit 找到blobMap
+        TreeMap<String, String> currHeadBlobs = getCommitBlobMap(curComHead);
+        TreeMap<String, String> ancestorBlobs = getCommitBlobMap(ancestorCom);
+        TreeMap<String, String> mergedToBlobs = getCommitBlobMap(mergedBranHeadCom);
+        //这三者都有可能是空的……
+        //遍历curr
+        if (currHeadBlobs != null) {
+            for (String fileName : currHeadBlobs.keySet()) {
+                String thisBlob = currHeadBlobs.get(fileName);
+                if (mergedToBlobs != null && mergedToBlobs.containsKey(fileName)) {
+                    String mergedBlob = mergedToBlobs.get(fileName);
+                    if (ancestorBlobs != null && ancestorBlobs.containsKey(fileName))
+                    {
+                        // 三个都有同名文件的情况
+                        String ancestorBlob = ancestorBlobs.get(fileName);
+                        //情况1 当前和ansestor一样 mergeto改了
+                        if (!mergedBlob.equals(thisBlob) && thisBlob.equals(ancestorBlob)) {
+                            Blob.reviveFile(mergedBlob, fileName);
+                            currHeadBlobs.put(fileName, mergedBlob);
+                            //还要将这个加入addition区域
+                            File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
+                            addition adt = readObject(adtFile, addition.class);
+                            adt.addFilebySha1(fileName, mergedBlob);
+                        }
 
+                        //情况2 ancestor和mergeto一样 当前的改了
+                        if (ancestorBlob.equals(mergedBlob) && !mergedBlob.equals(thisBlob)) {
+                            Blob.reviveFile(thisBlob, fileName); //好像也不用..
+                        }
+
+                        // 情况8： 冲突了
+                        if (!ancestorBlob.equals(thisBlob) && !ancestorBlob.equals(mergedBlob)) {
+                            System.out.println("Encountered a merge conflict.");
+                            return null;
+                        }
+                    }
+                }
+                else {
+                    // mergeto 没有同名文件
+                    if (ancestorBlobs != null && ancestorBlobs.containsKey(fileName)) {
+                        String ancestorBlob = ancestorBlobs.get(fileName);
+                        if (ancestorBlob.equals(thisBlob)) {
+                            //情况3 当前和anscestor一样 mergeto删了
+                            File f = join(PROJECT, fileName);
+                            f.delete();
+                            currHeadBlobs.remove(fileName);
+                            // 还要加入removal区域
+                            File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
+                            Removal rmval = readObject(rmvalFile, Removal.class);
+                            rmval.addFile(ancestorBlob, fileName);
+                        }
+                    }
+                    else {
+                        //情况4 只有当前有 不增也不减 无事发生（表中最后一列）
+                        continue;
+                    }
+                }
+            }
+        }
+        //遍历要merge的文件blob
+        if (mergedToBlobs != null) {
+            for (String fileName : mergedToBlobs.keySet()) {
+                String mergeToBlob = mergedToBlobs.get(fileName);
+                if (currHeadBlobs == null || !currHeadBlobs.containsKey(fileName)) {
+                    if (ancestorBlobs != null && ancestorBlobs.containsKey(fileName)) {
+                        // 情况 5 mergeto和ansestor都有 无事发生 不会复原
+                        continue;
+                    }
+                    if (ancestorBlobs == null || !ancestorBlobs.containsKey(fileName)) {
+                        // 情况6 只有mergeto有 要复原
+                        Blob.reviveFile(mergeToBlob, fileName);
+                        currHeadBlobs.put(fileName, mergeToBlob);
+                        // 还要加到addition里面
+                        File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
+                        addition adt = readObject(adtFile, addition.class);
+                        adt.addFilebySha1(fileName, mergeToBlob);
+                    }
+                }
+            }
+        }
+        //还有情况7 只有ancestor有 还是无事发生 不用写
+        return currHeadBlobs;
     }
 }

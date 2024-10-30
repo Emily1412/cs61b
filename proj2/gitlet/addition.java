@@ -60,6 +60,12 @@ public class addition implements Serializable {
         saveAdditionArea();
     }
 
+    public  void addFilebySha1(String fileName, String sha1) {
+        if (additionFiles != null) {
+            additionFiles.put(fileName, sha1);
+        }
+        saveAdditionArea();
+    }
 
     public String[] allAdditionFilesSHA1() {
         if (additionFiles != null) {

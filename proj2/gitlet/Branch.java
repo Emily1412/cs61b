@@ -20,6 +20,15 @@ public class Branch implements Serializable {
     //最后面的就是头结点
     String branchName;
     String resetCommit;
+    static boolean ContainValue(TreeMap<Integer, String> Tm, String value){
+        if (Tm.size() == 0) return false;
+        for (Integer i : Tm.keySet()){
+            if (Tm.get(i).equals(value)){
+                return true;
+            }
+        }
+        return false;
+    }
     static final File BRANCH_FOLDER = join(".gitlet", "branches");
     public Branch(String branchName) {
         commitsList = new TreeMap<Integer, String>();
