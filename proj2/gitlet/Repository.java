@@ -663,19 +663,19 @@ public class Repository {
         }
     }
 
-    public static void dealWithErrMerge(String branchName) {
+    public static boolean dealWithErrMerge(String branchName) {
         if (!Addition.isAdditionEmpty() || !isRmvalEmpty()) {
             System.out.println("You have uncommitted changes.");
-            return;
+            return false;
         }
         File f = join(BRANCH_FOLDER, branchName);
         if (!f.exists()) {
             System.out.println("A branch with that name does not exist.");
-            return;
+            return false;
         }
         if (branchName.equals(getCurrentBranch())) {
             System.out.println("Cannot merge a branch with itself.");
-            return;
+            return false;
         }
 
         //当前分支的名字
@@ -685,11 +685,15 @@ public class Repository {
             System.out.println("There is an "
                     + "untracked file in the way; delete it, "
                     + "or add and commit it first.");
-            return;
+            return false;
         }
+        return true;
     }
     public static void merge(String branchName) {
-        dealWithErrMerge(branchName);
+        boolean flag = dealWithErrMerge(branchName);
+        if (!flag) {
+            return;
+        }
         String currentBranch = getCurrentBranch();
         String curComHead = Branch.getBranchHeadCommit(currentBranch);
         String mergedBranHeadCom = Branch.getBranchHeadCommit(branchName);
@@ -798,6 +802,10 @@ public class Repository {
                             File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
                             Removal rmval = readObject(rmvalFile, Removal.class);
                             rmval.addFile(ancestorBlob, fileName);
+                        } else {
+                            // 情况9： head做了改动，mergeto没有 发生冲突
+                            System.out.println("Encountered a merge conflict.");
+                            dealConflict(fileName, null);
                         }
                     }
                     //else 情况4 只有当前有 不增也不减 无事发生（表中最后一列）
@@ -833,17 +841,29 @@ public class Repository {
         //重构这个文件
         File f = join(PROJECT, "tem");
         writeContentsAppend(f, "<<<<<<< HEAD\n");
-        File f2 = join(BLOB_FOLDER, mergedBlob);
-        File f3 = join(PROJECT, fileName);
-        Blob b2 = readObject(f2, Blob.class);
-        String s1 = readContentsAsString(f3);
-        byte[] f2b = b2.getContent();
-        String s2 = new String(f2b, StandardCharsets.UTF_8);
-        writeContentsAppend(f, s1);
-        writeContentsAppend(f, "=======\n");
-        writeContentsAppend(f, s2);
+        if (mergedBlob != null) {
+            File f2 = join(BLOB_FOLDER, mergedBlob);
+            Blob b2 = readObject(f2, Blob.class);
+            File f3 = join(PROJECT, fileName);
+            String s1 = readContentsAsString(f3);
+            byte[] f2b = b2.getContent();
+            String s2 = new String(f2b, StandardCharsets.UTF_8);
+            writeContentsAppend(f, s1);
+            writeContentsAppend(f, "=======\n");
+            writeContentsAppend(f, s2);
+            dealConflictHelper(f, f3, fileName);
+        } else {
+            File f3 = join(PROJECT, fileName);
+            String s1 = readContentsAsString(f3);
+            writeContentsAppend(f, s1);
+            writeContentsAppend(f, "=======\n");
+            dealConflictHelper(f, f3, fileName);
+        }
+
+    }
+    public static void dealConflictHelper(File f, File f3, String fileName) {
         writeContentsAppend(f, ">>>>>>>\n");
-        String content = readContentsAsString(f);  // 或者使用 readContents() 读取 byte[]
+        String content = readContentsAsString(f);
         // 将读取的内容写入到 fileName 文件中
         writeContents(f3, content);
         //还要加一个暂存区！！！
