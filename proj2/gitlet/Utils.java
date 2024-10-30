@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -167,6 +168,29 @@ class Utils {
     }
 
     /* DIRECTORIES */
+
+    static void writeContentsAppend(File file, Object... contents) {
+        try {
+            if (file.isDirectory()) {
+                throw new IllegalArgumentException("cannot overwrite directory");
+            }
+            // 使用追加模式打开文件
+            BufferedOutputStream str = new BufferedOutputStream(
+                    Files.newOutputStream(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND));
+
+            for (Object obj : contents) {
+                if (obj instanceof byte[]) {
+                    str.write((byte[]) obj);  // 写入 byte[] 数组
+                } else {
+                    str.write(((String) obj).getBytes(StandardCharsets.UTF_8));  // 写入 String
+                }
+            }
+            str.close();
+        } catch (IOException | ClassCastException excp) {
+            throw new IllegalArgumentException(excp.getMessage());
+        }
+    }
+
 
     /** Filter out all but plain files. */
     //过滤除普通文件的其他文件

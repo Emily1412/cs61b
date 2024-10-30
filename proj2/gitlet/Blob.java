@@ -1,5 +1,6 @@
 package gitlet;
 
+import javax.swing.plaf.PanelUI;
 import java.io.File;
 import java.io.Serializable;
 
@@ -77,4 +78,5 @@ public class Blob implements Serializable {
         String bolbSha1 = sha1(thisByte);
         return bolbSha1;
     }
+
 }

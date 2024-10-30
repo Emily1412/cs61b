@@ -4,6 +4,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 import java.time.format.DateTimeFormatter;
@@ -734,11 +735,12 @@ public class Repository {
         TreeMap<String, String> blobs = mergeHelper(curComHead, ancestorCom, mergedBranHeadCom);
 
         //创建一个新的commit!
-        String msg = "Merged " + branchName + " into " + getHead() + ".";
+        String msg = "Merged " + branchName + " into " + currentBranch + ".";
         Instant time = Instant.now();
         String[] parent = {getHead(), branchName};
         Commit newCommit = new Commit(msg, time, blobs, parent);
-        newCommit.saveCommit();
+        String newHead = newCommit.saveCommit();
+        saveHead(newHead);
     }
     public static TreeMap<String, String> mergeHelper(String curComHead,
                                    String ancestorCom,
@@ -772,6 +774,23 @@ public class Repository {
                         // 情况8： 冲突了
                         if (!ancestorBlob.equals(thisBlob) && !ancestorBlob.equals(mergedBlob)) {
                             System.out.println("Encountered a merge conflict.");
+                            //重构这个文件
+                            File f = join(PROJECT, "tem");
+                            writeContentsAppend(f, "<<<<<<< HEAD\n");
+                            File f2 = join(BLOB_FOLDER, mergedBlob);
+                            File f3 = join(PROJECT, fileName);
+                            Blob b2 = readObject(f2, Blob.class);
+                            String s1 = readContentsAsString(f3);
+                            byte[] f2b = b2.getContent();
+                            String s2 = new String(f2b, StandardCharsets.UTF_8);
+                            writeContentsAppend(f, s1);
+                            writeContentsAppend(f, "=======\n");
+                            writeContentsAppend(f, s2);
+                            writeContentsAppend(f, ">>>>>>>");
+                            String content = readContentsAsString(f);  // 或者使用 readContents() 读取 byte[]
+                            // 将读取的内容写入到 fileName 文件中
+                            writeContents(f3, content);
+                            f.delete();
                             return null;
                         }
                     }
