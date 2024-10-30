@@ -774,24 +774,8 @@ public class Repository {
                         // 情况8： 冲突了
                         if (!ancestorBlob.equals(thisBlob) && !ancestorBlob.equals(mergedBlob)) {
                             System.out.println("Encountered a merge conflict.");
-                            //重构这个文件
-                            File f = join(PROJECT, "tem");
-                            writeContentsAppend(f, "<<<<<<< HEAD\n");
-                            File f2 = join(BLOB_FOLDER, mergedBlob);
-                            File f3 = join(PROJECT, fileName);
-                            Blob b2 = readObject(f2, Blob.class);
-                            String s1 = readContentsAsString(f3);
-                            byte[] f2b = b2.getContent();
-                            String s2 = new String(f2b, StandardCharsets.UTF_8);
-                            writeContentsAppend(f, s1);
-                            writeContentsAppend(f, "=======\n");
-                            writeContentsAppend(f, s2);
-                            writeContentsAppend(f, ">>>>>>>");
-                            String content = readContentsAsString(f);  // 或者使用 readContents() 读取 byte[]
-                            // 将读取的内容写入到 fileName 文件中
-                            writeContents(f3, content);
-                            f.delete();
-                            return null;
+                            dealConflict(fileName, mergedBlob);
+                            //不是冲突就return 还要处理其他文件
                         }
                     }
                 } else {
@@ -836,5 +820,31 @@ public class Repository {
         }
         //还有情况7 只有ancestor有 还是无事发生 不用写
         return currHeadBlobs;
+    }
+
+    public static void dealConflict(String fileName, String mergedBlob) {
+        //重构这个文件
+        File f = join(PROJECT, "tem");
+        writeContentsAppend(f, "<<<<<<< HEAD\n");
+        File f2 = join(BLOB_FOLDER, mergedBlob);
+        File f3 = join(PROJECT, fileName);
+        Blob b2 = readObject(f2, Blob.class);
+        String s1 = readContentsAsString(f3);
+        byte[] f2b = b2.getContent();
+        String s2 = new String(f2b, StandardCharsets.UTF_8);
+        writeContentsAppend(f, s1);
+        writeContentsAppend(f, "=======\n");
+        writeContentsAppend(f, s2);
+        writeContentsAppend(f, ">>>>>>>\n");
+        String content = readContentsAsString(f);  // 或者使用 readContents() 读取 byte[]
+        // 将读取的内容写入到 fileName 文件中
+        writeContents(f3, content);
+        //还要加一个暂存区！！！
+        Blob b = new Blob(f3);
+        String sha1 = b.saveBlob();
+        File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
+        addition adt = readObject(adtFile, addition.class);
+        adt.addFilebySha1(fileName, sha1);
+        f.delete();
     }
 }
