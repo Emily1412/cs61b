@@ -110,7 +110,7 @@ public class Repository {
         //commits & blobs
         if (GITLET_DIR.exists()) {
             System.err.println
-                    ("A Gitlet version-control system already exists in the current directory.");
+            ("A Gitlet version-control system already exists in the current directory.");
             return;
         }
         GITLET_DIR.mkdirs();
@@ -287,7 +287,6 @@ public class Repository {
 
         //待测试！！！！！！
         //如果文件被当前提交跟踪 (已经 commit)，`rm` 会在暂存区标记其为删除，并从工作目录中删除。
-        File head = HEAD;
         TreeMap<String, String> headComBlobMap = getCommitBlobMap(getHead());
         if (headComBlobMap != null && headComBlobMap.containsKey(fileName)) {
             File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
@@ -438,7 +437,7 @@ public class Repository {
             try {
                 wantedFile.createNewFile();
             } catch (IOException e) {
-
+                System.out.println(e.getMessage());
             }
         } else {
             System.out.println("File does not exist in that commit.");
@@ -511,7 +510,7 @@ public class Repository {
             for (String fileName : untrackedFileNames) {
                 if (branchFileNames.containsKey(fileName)) {
                     System.out.println
-                            ("There is an untracked file in the way; delete it, or add and commit it first.");
+                    ("There is an untracked file in the way; delete it, or add and commit it first.");
                 }
             }
         }
@@ -522,7 +521,7 @@ public class Repository {
         TreeMap<String, String> nowCommitFileNames = Commit.getCommitBlobMap(getHead());
         if (nowCommitFileNames != null) {
             for (String fileName : nowCommitFileNames.keySet()) {
-                if (branchFileNames != null && !branchFileNames.containsKey(fileName)) {
+                if (branchFileNames == null || !branchFileNames.containsKey(fileName)) {
                     File toBeDeleted = join(PROJECT, fileName);
                     toBeDeleted.delete();
                 }
@@ -547,10 +546,6 @@ public class Repository {
             Branch newBranch = new Branch(newBranchName);
             String headComName = getHead();
             newBranch.addCommit(headComName);
-//            String msg = "initial commit";
-//            Instant time = Instant.ofEpochSecond(0);
-//            Commit initialCommit = new Commit(msg, time, null, null);
-//            String commitName = initialCommit.saveCommit();
             newBranch.saveBranch();
         }
     }
@@ -603,7 +598,7 @@ public class Repository {
             for (String fileName : untrackedFileNames) {
                 if (desCommitBlobMap.containsKey(fileName)) {
                     System.out.println
-                            ("There is an untracked file in the way; delete it, or add and commit it first.");
+                    ("There is an untracked file in the way; delete it, or add and commit it first.");
                     return;
                 }
             }
@@ -664,7 +659,7 @@ public class Repository {
         }
         // 移除目标文件里没有的文件
         for (String fileName : currCommit.keySet()) {
-            if (mergeToCom != null && !mergeToCom.containsKey(fileName)){
+            if (mergeToCom != null && !mergeToCom.containsKey(fileName)) {
                 File thisfile = join(PROJECT, fileName);
                 thisfile.delete();
             }
@@ -702,7 +697,7 @@ public class Repository {
         TreeMap<Integer, String> mergedBranComList = mergedBranch.getCommits();
         for (Integer key : mergedBranComList.keySet()) {
             String thisValue = mergedBranComList.get(key);
-            if (thisValue.equals(curComHead)){
+            if (thisValue.equals(curComHead)) {
                 //快速前进
                 System.out.println("Current branch fast-forwarded.");
                 combine(mergedBranHeadCom);
@@ -712,10 +707,10 @@ public class Repository {
         }
         for (Integer key : curBranComList.keySet()) {
             String thisValue = curBranComList.get(key);
-            if (thisValue.equals(mergedBranHeadCom)){
+            if (thisValue.equals(mergedBranHeadCom)) {
                 //是祖先！
                 System.out.println
-                        ("Given branch is an ancestor of the current branch.");
+                ("Given branch is an ancestor of the current branch.");
                 return;
             }
         }

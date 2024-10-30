@@ -78,7 +78,7 @@ public class addition implements Serializable {
         int i = 0;
         if (additionFiles != null) {
             for (String fileName : additionFiles.keySet()) {
-               blobFileNames[i++] = fileName;
+                blobFileNames[i++] = fileName;
             }
         }
         return blobFileNames; //treemap已经按照字典序排好了！
