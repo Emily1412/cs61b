@@ -19,11 +19,14 @@ public class Branch implements Serializable {
     TreeMap<Integer, String> commitsList;
     //最后面的就是头结点
     String branchName;
+    private static final long serialVersionUID = 1L;
     String resetCommit;
-    static boolean ContainValue(TreeMap<Integer, String> Tm, String value){
-        if (Tm.size() == 0) return false;
-        for (Integer i : Tm.keySet()){
-            if (Tm.get(i).equals(value)){
+    static boolean containValue(TreeMap<Integer, String> tm, String value) {
+        if (tm.size() == 0) {
+            return false;
+        }
+        for (Integer i : tm.keySet()) {
+            if (tm.get(i).equals(value)) {
                 return true;
             }
         }

@@ -724,11 +724,11 @@ public class Repository {
         String ancestorCom = "";
         //反向遍历当前branch的commit列表
         for (Map.Entry<Integer, String> entry : curBranComList.descendingMap().entrySet()) {
-           String thisCommit = entry.getValue();
-           if (Branch.ContainValue(mergedBranComList, thisCommit)) {
-               ancestorCom = thisCommit;
-               break;
-           }
+            String thisCommit = entry.getValue();
+            if (Branch.containValue(mergedBranComList, thisCommit)) {
+                ancestorCom = thisCommit;
+                break;
+            }
         }
         // 对当前这三者的文件进行combine curComHead ancestorCom mergedBranHeadCom
         TreeMap<String, String> blobs = mergeHelper(curComHead, ancestorCom, mergedBranHeadCom);
@@ -747,15 +747,13 @@ public class Repository {
         TreeMap<String, String> currHeadBlobs = getCommitBlobMap(curComHead);
         TreeMap<String, String> ancestorBlobs = getCommitBlobMap(ancestorCom);
         TreeMap<String, String> mergedToBlobs = getCommitBlobMap(mergedBranHeadCom);
-        //这三者都有可能是空的……
-        //遍历curr
+        //这三者都有可能是空的……遍历curr
         if (currHeadBlobs != null) {
             for (String fileName : currHeadBlobs.keySet()) {
                 String thisBlob = currHeadBlobs.get(fileName);
                 if (mergedToBlobs != null && mergedToBlobs.containsKey(fileName)) {
                     String mergedBlob = mergedToBlobs.get(fileName);
-                    if (ancestorBlobs != null && ancestorBlobs.containsKey(fileName))
-                    {
+                    if (ancestorBlobs != null && ancestorBlobs.containsKey(fileName)) {
                         // 三个都有同名文件的情况
                         String ancestorBlob = ancestorBlobs.get(fileName);
                         //情况1 当前和ansestor一样 mergeto改了
@@ -767,20 +765,17 @@ public class Repository {
                             addition adt = readObject(adtFile, addition.class);
                             adt.addFilebySha1(fileName, mergedBlob);
                         }
-
                         //情况2 ancestor和mergeto一样 当前的改了
                         if (ancestorBlob.equals(mergedBlob) && !mergedBlob.equals(thisBlob)) {
                             Blob.reviveFile(thisBlob, fileName); //好像也不用..
                         }
-
                         // 情况8： 冲突了
                         if (!ancestorBlob.equals(thisBlob) && !ancestorBlob.equals(mergedBlob)) {
                             System.out.println("Encountered a merge conflict.");
                             return null;
                         }
                     }
-                }
-                else {
+                } else {
                     // mergeto 没有同名文件
                     if (ancestorBlobs != null && ancestorBlobs.containsKey(fileName)) {
                         String ancestorBlob = ancestorBlobs.get(fileName);
@@ -795,10 +790,7 @@ public class Repository {
                             rmval.addFile(ancestorBlob, fileName);
                         }
                     }
-                    else {
-                        //情况4 只有当前有 不增也不减 无事发生（表中最后一列）
-                        continue;
-                    }
+                    //else 情况4 只有当前有 不增也不减 无事发生（表中最后一列）
                 }
             }
         }
