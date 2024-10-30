@@ -56,6 +56,7 @@ public class Removal implements Serializable {
         saveRemovalArea();
     }
 
+    //判断removal区域有没有文件
     public static boolean isRmvalEmpty() {
         File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
         Removal rmval = readObject(rmvalFile, Removal.class);

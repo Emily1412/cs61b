@@ -99,6 +99,7 @@ public class addition implements Serializable {
         return additionFiles;
     }
 
+    //判断addition区域有没有文件
     public static boolean isAdditionEmpty() {
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
         addition adt = readObject(adtFile, addition.class);

@@ -109,7 +109,8 @@ public class Repository {
         //创建目录结构
         //commits & blobs
         if (GITLET_DIR.exists()) {
-            System.err.println("A Gitlet version-control system already exists in the current directory.");
+            System.err.println
+                    ("A Gitlet version-control system already exists in the current directory.");
             return;
         }
         GITLET_DIR.mkdirs();
@@ -239,6 +240,7 @@ public class Repository {
         Commit parentCommit = readObject(commitFolder, Commit.class);
         TreeMap<String, String> parentBlobs = parentCommit.getBlobsMap();
         if (parentBlobs != null) {
+            //遍历父节点的文件 如果新的里面没有，就加入
             for (String fileName : parentBlobs.keySet()) {
                 if (!newCommit.getBlobsMap().containsKey(fileName)) {
                     newCommit.addBlob(fileName, parentBlobs.get(fileName));
@@ -305,7 +307,8 @@ public class Repository {
         System.out.print("commit " + thisSHA1 + "\n");
         Instant instant = thisCom.getCommitTime();
         ZonedDateTime zonedDateTime = instant.atZone(ZoneId.of("America/Los_Angeles"));
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss yyyy Z", Locale.ENGLISH);
+        DateTimeFormatter formatter =
+                DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss yyyy Z", Locale.ENGLISH);
         String formattedDate = zonedDateTime.format(formatter);
         System.out.print("Date: " + formattedDate + "\n");
 
@@ -497,27 +500,9 @@ public class Repository {
             System.out.println("No need to checkout the current branch.");
             return;
         }
-        //得到目标分支文件表
+        //得到目标分支文件表 commit头
         String branCommitName = Branch.getBranchHeadCommit(branchName);
-        /* if (branCommitName == null) { //这个可删 因为不可能是null了
-            //这个分支是个空分支
-            TreeSet<String> untrackedFileNames = untrackedFileNames(getHead());
-            if (untrackedFileNames.size() != 0) {
-                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
-            } else {
-                checkOutCommit(branCommitName);
-                List<String> allWorkNames = getAllWorkNames();
-                if (allWorkNames.size() != 0) {
-                    for (String fileName : allWorkNames) {
-                        File f2Bdelete = join(PROJECT, fileName);
-                        f2Bdelete.delete();
-                    }
-                }
-                saveCurrBranch(branchName);
-                saveHead(branCommitName);
-            }
-        }
-        */
+        //目标文件文件列表
         TreeMap<String, String> branchFileNames = Commit.getCommitBlobMap(branCommitName);
 
         //当前前分支中有未跟踪的文件，并且这些文件会被目标分支覆盖 报错
@@ -525,7 +510,8 @@ public class Repository {
         if (branchFileNames != null && untrackedFileNames.size() != 0) {
             for (String fileName : untrackedFileNames) {
                 if (branchFileNames.containsKey(fileName)) {
-                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                    System.out.println
+                            ("There is an untracked file in the way; delete it, or add and commit it first.");
                 }
             }
         }
@@ -536,7 +522,7 @@ public class Repository {
         TreeMap<String, String> nowCommitFileNames = Commit.getCommitBlobMap(getHead());
         if (nowCommitFileNames != null) {
             for (String fileName : nowCommitFileNames.keySet()) {
-                if (branchFileNames == null || !branchFileNames.containsKey(fileName)) {
+                if (branchFileNames != null && !branchFileNames.containsKey(fileName)) {
                     File toBeDeleted = join(PROJECT, fileName);
                     toBeDeleted.delete();
                 }
@@ -616,7 +602,8 @@ public class Repository {
         if (untrackedFileNames.size() != 0) {
             for (String fileName : untrackedFileNames) {
                 if (desCommitBlobMap.containsKey(fileName)) {
-                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                    System.out.println
+                            ("There is an untracked file in the way; delete it, or add and commit it first.");
                     return;
                 }
             }
@@ -648,5 +635,91 @@ public class Repository {
         addition adt = readObject(adtFile, addition.class);
         adt.clearAdditionArea();
         rmval.clearRemovalArea();
+    }
+
+    //merge 的helper function 用于求当前commit和对应commit的并集
+    public static void combine(String commitName) {
+        String headComName = getHead();
+        TreeMap<String, String> currCommit =
+                getCommitBlobMap(headComName);
+        TreeMap<String, String> mergeToCom =
+                getCommitBlobMap(commitName);
+        //merge的那个应该不会为null 当为0的时候要删除所有文件！
+        if (mergeToCom.size() == 0) {
+            if (currCommit.size() != 0) {
+                for (String fileName : currCommit.keySet()) {
+                    File thisfile = join(PROJECT, fileName);
+                    thisfile.delete();
+                }
+            }
+        }
+        for (String fileName : mergeToCom.keySet()) {
+            //现在的commit有之前commit的文件
+            if (currCommit != null && currCommit.containsKey(fileName)) {
+                if (!currCommit.get(fileName).equals(mergeToCom.get(fileName))) {
+                    System.out.println("Encountered a merge conflict.");
+                    return;
+                }
+            }
+        }
+        // 移除目标文件里没有的文件
+        for (String fileName : currCommit.keySet()) {
+            if (mergeToCom != null && !mergeToCom.containsKey(fileName)){
+                File thisfile = join(PROJECT, fileName);
+                thisfile.delete();
+            }
+        }
+    }
+
+    public static void merge(String branchName) {
+        if (!isAdditionEmpty() || !isRmvalEmpty()) {
+            System.out.println("You have uncommitted changes.");
+            return;
+        }
+        File f = join(BRANCH_FOLDER, branchName);
+        if (!f.exists()) {
+            System.out.println("A branch with that name does not exist.");
+            return;
+        }
+        if (branchName.equals(getCurrentBranch())) {
+            System.out.println("Cannot merge a branch with itself.");
+            return;
+        }
+        // 合并会导致未跟踪的文件被覆盖或者删除？
+        // 获得当前未跟踪的文件
+        // 合并分支commitHead 的文件
+        // 判断是否会被删除
+
+        //当前分支的名字
+        String currentBranch = getCurrentBranch();
+        String curComHead = Branch.getBranchHeadCommit(currentBranch);
+        String mergedBranHeadCom = Branch.getBranchHeadCommit(branchName);
+        File f1 = join(BRANCH_FOLDER, currentBranch);
+        File f2 = join(BRANCH_FOLDER, branchName);
+        Branch curBranch = readObject(f1, Branch.class);
+        Branch mergedBranch = readObject(f2, Branch.class);
+        TreeMap<Integer, String> curBranComList = curBranch.getCommits();
+        TreeMap<Integer, String> mergedBranComList = mergedBranch.getCommits();
+        for (Integer key : mergedBranComList.keySet()) {
+            String thisValue = mergedBranComList.get(key);
+            if (thisValue.equals(curComHead)){
+                //快速前进
+                System.out.println("Current branch fast-forwarded.");
+                combine(mergedBranHeadCom);
+                saveHead(mergedBranHeadCom);
+                return;
+            }
+        }
+        for (Integer key : curBranComList.keySet()) {
+            String thisValue = curBranComList.get(key);
+            if (thisValue.equals(mergedBranHeadCom)){
+                //是祖先！
+                System.out.println
+                        ("Given branch is an ancestor of the current branch.");
+                return;
+            }
+        }
+
+
     }
 }
