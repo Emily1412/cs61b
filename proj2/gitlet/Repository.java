@@ -738,7 +738,11 @@ public class Repository {
         }
         // 对当前这三者的文件进行combine curComHead ancestorCom mergedBranHeadCom
         TreeMap<String, String> blobs = mergeHelper(curComHead, ancestorCom, mergedBranHeadCom);
+        mergeCommit(branchName, currentBranch, blobs);
 
+    }
+    public static void mergeCommit(String branchName,
+                                   String currentBranch,TreeMap<String, String> blobs) {
         //创建一个新的commit!
         String msg = "Merged " + branchName + " into " + currentBranch + ".";
         Instant time = Instant.now();
