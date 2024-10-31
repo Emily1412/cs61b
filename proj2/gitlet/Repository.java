@@ -742,7 +742,7 @@ public class Repository {
 
     }
     public static void mergeCommit(String branchName,
-                                   String currentBranch,TreeMap<String, String> blobs) {
+                                   String currentBranch, TreeMap<String, String> blobs) {
         //创建一个新的commit!
         String msg = "Merged " + branchName + " into " + currentBranch + ".";
         Instant time = Instant.now();
@@ -793,8 +793,7 @@ public class Repository {
                             //不是冲突就return 还要处理其他文件
                         }
                     }
-                } else {
-                    // mergeto 没有同名文件
+                } else { // mergeto 没有同名文件
                     if (ancestorBlobs != null && ancestorBlobs.containsKey(fileName)) {
                         String ancestorBlob = ancestorBlobs.get(fileName);
                         if (ancestorBlob.equals(thisBlob)) {
@@ -811,8 +810,7 @@ public class Repository {
                             System.out.println("Encountered a merge conflict.");
                             dealConflict(fileName, null);
                         }
-                    }
-                    //else 情况4 只有当前有 不增也不减 无事发生（表中最后一列）
+                    } //else 情况4 只有当前有 不增也不减 无事发生（表中最后一列）
                 }
             }
         }

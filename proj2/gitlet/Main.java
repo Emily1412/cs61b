@@ -18,7 +18,6 @@ public class Main {
         if (args.length == 0) {
             System.out.println("Please enter a command.");
         }
-        try {
             String firstArg = args[0];
             switch (firstArg) {
                 case "init":
@@ -34,7 +33,6 @@ public class Main {
                     } else {
                         Repository.commit(args[1]);
                     }
-
                     break;
                 case "rm":
                     Repository.rm(args[1]);
@@ -89,9 +87,6 @@ public class Main {
                     break;
             }
         }
-        catch (Exception e) {
-            Utils.error(e.getMessage());
-        }
 
     }
-}
+
