@@ -758,13 +758,13 @@ public class Repository {
         saveHead(newHead);
     }
     public static TreeMap<String, String> mergeHelper(String curComHead,
-                                   String ancestorCom,
-                                   String mergedBranHeadCom) {
+                                   String ancestorCom, String mergedBranHeadCom) {
         //还原commit 找到blobMap
         TreeMap<String, String> currHeadBlobs = getCommitBlobMap(curComHead);
         TreeMap<String, String> ancestorBlobs = getCommitBlobMap(ancestorCom);
         TreeMap<String, String> mergedToBlobs = getCommitBlobMap(mergedBranHeadCom);
         //这三者都有可能是空的……遍历curr
+        TreeMap<String, String> clonedMap = new TreeMap<>(currHeadBlobs);
         if (currHeadBlobs != null) {
             for (String fileName : currHeadBlobs.keySet()) {
                 String thisBlob = currHeadBlobs.get(fileName);
@@ -776,7 +776,7 @@ public class Repository {
                         //情况1 当前和ansestor一样 mergeto改了
                         if (!mergedBlob.equals(thisBlob) && thisBlob.equals(ancestorBlob)) {
                             Blob.reviveFile(mergedBlob, fileName);
-                            currHeadBlobs.put(fileName, mergedBlob);
+                            clonedMap.put(fileName, mergedBlob);
                             //还要将这个加入addition区域
                             File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
                             Addition adt = readObject(adtFile, Addition.class);
@@ -800,7 +800,7 @@ public class Repository {
                             //情况3 当前和anscestor一样 mergeto删了
                             File f = join(PROJECT, fileName);
                             f.delete();
-                            currHeadBlobs.remove(fileName);
+                            clonedMap.remove(fileName);
                             // 还要加入removal区域
                             File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
                             Removal rmval = readObject(rmvalFile, Removal.class);
@@ -826,7 +826,7 @@ public class Repository {
                     if (ancestorBlobs == null || !ancestorBlobs.containsKey(fileName)) {
                         // 情况6 只有mergeto有 要复原
                         Blob.reviveFile(mergeToBlob, fileName);
-                        currHeadBlobs.put(fileName, mergeToBlob);
+                        clonedMap.put(fileName, mergeToBlob);
                         // 还要加到addition里面
                         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
                         Addition adt = readObject(adtFile, Addition.class);
@@ -836,7 +836,7 @@ public class Repository {
             }
         }
         //还有情况7 只有ancestor有 还是无事发生 不用写
-        return currHeadBlobs;
+        return clonedMap;
     }
 
     public static void dealConflict(String fileName, String mergedBlob) {
