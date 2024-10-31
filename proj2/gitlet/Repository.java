@@ -733,18 +733,23 @@ public class Repository {
         //找到公共祖先！
         String ancestorCom = "";
         //反向遍历当前branch的commit列表 可能不能这样……需要通过链表来逐一查找每个commit的P列表
-        for (Map.Entry<Integer, String> entry : curBranComList.descendingMap().entrySet()) {
+        ancestorCom = findLCA(curComHead, mergedBranHeadCom);
+
+        /* for (Map.Entry<Integer, String> entry : curBranComList.descendingMap().entrySet()) {
             String thisCommit = entry.getValue();
             if (Branch.containValue(mergedBranComList, thisCommit)) {
                 ancestorCom = thisCommit;
                 break;
             }
         }
+         */
         // 对当前这三者的文件进行combine curComHead ancestorCom mergedBranHeadCom
         TreeMap<String, String> blobs = mergeHelper(curComHead, ancestorCom, mergedBranHeadCom);
         mergeCommit(branchName, currentBranch, blobs);
 
     }
+
+
     public static void mergeCommit(String branchName,
                                    String currentBranch, TreeMap<String, String> blobs) {
         //创建一个新的commit!

@@ -10,10 +10,7 @@ import java.time.Instant;
 
 import static gitlet.Utils.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 
 /** Represents a gitlet commit object.
@@ -114,27 +111,24 @@ public class Commit implements Serializable {
         }
     }
 
-
-
-    public static List<String> getwantedCommit(String prefix) {
+    public static Commit getwantedCommit(String prefix) {
         String first2 = prefix.substring(0, 2);
         File dir = join(COMMIT_FOLDER, first2);
-        List<String> matchingCommit = new ArrayList<>();
 
         if (dir.isDirectory()) {
             File[] matchingFiles = dir.listFiles((dir1, name) -> {
-                return name.startsWith(prefix);  // 检查文件名是否以prefix开头
+                return name.startsWith(prefix); // 检查文件名是否以prefix开头
             });
-            if (matchingFiles != null) {
-                for (File file : matchingFiles) {
-                    // 添加文件全称
-                    matchingCommit.add(file.getName());
-                }
 
+            // 如果找到了匹配的文件，读取第一个并返回
+            if (matchingFiles != null && matchingFiles.length > 0) {
+                File matchingFile = matchingFiles[0]; // 假设只返回第一个
+                return readObject(matchingFile, Commit.class); // 读取并返回该Commit对象
             }
         }
-        return matchingCommit;
+        return null; // 如果没有找到匹配的commit，返回null
     }
+
 
     public static List<String> getAllCommitNames() {
         List<String> allCommitNames = new ArrayList<>();
@@ -243,6 +237,81 @@ public class Commit implements Serializable {
             }
         }
         return untrackedFileNames;
+    }
+
+    /**
+     * 找到两个commit最近的公共祖先的SHA1
+     * @param sha11 第一个Commit对象的SHA1值
+     * @param sha12 第二个Commit对象的SHA1值
+     * @return 最近的公共祖先的SHA1字符串
+     */
+    public static String findLCA(String sha11, String sha12) {
+        // 先通过SHA1找到对应的commit对象
+        Commit commit1 = getwantedCommit(sha11);
+        Commit commit2 = getwantedCommit(sha12);
+
+        if (commit1 == null || commit2 == null) {
+            return null; // 如果其中一个commit不存在，直接返回null
+        }
+
+        // 用来存放bfs队列
+        Queue<Commit> queue1 = new LinkedList<>();
+        Queue<Commit> queue2 = new LinkedList<>();
+
+        // 用来记录访问过的节点
+        Set<String> visited1 = new HashSet<>();
+        Set<String> visited2 = new HashSet<>();
+
+        // 开始从两个commit分别进行bfs
+        queue1.add(commit1);
+        queue2.add(commit2);
+        visited1.add(sha11);  // 直接使用传入的 SHA1 作为唯一标识
+        visited2.add(sha12);
+
+        while (!queue1.isEmpty() || !queue2.isEmpty()) {
+            // 从commit1开始搜索
+            if (!queue1.isEmpty()) {
+                Commit current1 = queue1.poll();
+                for (String parentSha1 : current1.getParentsSHA1()) {
+                    if (visited2.contains(parentSha1)) {
+                        return parentSha1;  // 找到公共祖先，直接返回SHA1
+                    }
+                    if (!visited1.contains(parentSha1)) {
+                        visited1.add(parentSha1);
+                        queue1.add(getCommitBySha1(parentSha1));
+                    }
+                }
+            }
+
+            // 从commit2开始搜索
+            if (!queue2.isEmpty()) {
+                Commit current2 = queue2.poll();
+                for (String parentSha1 : current2.getParentsSHA1()) {
+                    if (visited1.contains(parentSha1)) {
+                        return parentSha1;  // 找到公共祖先，直接返回SHA1
+                    }
+                    if (!visited2.contains(parentSha1)) {
+                        visited2.add(parentSha1);
+                        queue2.add(getCommitBySha1(parentSha1));
+                    }
+                }
+            }
+        }
+        return null; // 没有找到公共祖先
+    }
+
+    /**
+     * 根据SHA1获取对应的Commit对象
+     * @param sha1 Commit的SHA1值
+     * @return 对应的Commit对象
+     */
+    public static Commit getCommitBySha1(String sha1) {
+        // 从 COMMIT_FOLDER 中找到相应 SHA1 的 commit 文件并返回
+        File commitFile = join(COMMIT_FOLDER, sha1);
+        if (commitFile.exists()) {
+            return readObject(commitFile, Commit.class);  // 假设存在此方法来反序列化
+        }
+        return null;
     }
 
 }
