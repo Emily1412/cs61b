@@ -542,7 +542,11 @@ public class Repository {
         } else {
             Branch newBranch = new Branch(newBranchName);
             String headComName = getHead();
-            newBranch.addCommit(headComName);
+            //要把这条分支上的所有commit都加入到这个新的branch上面
+            File f1 = join(BRANCH_FOLDER, getCurrentBranch());
+            Branch curBranch = readObject(f1, Branch.class);
+            TreeMap<Integer, String> curBranchMap = curBranch.getCommits();
+            newBranch.addCommitMap(curBranchMap);
             newBranch.saveBranch();
         }
     }
@@ -728,7 +732,7 @@ public class Repository {
         }
         //找到公共祖先！
         String ancestorCom = "";
-        //反向遍历当前branch的commit列表
+        //反向遍历当前branch的commit列表 可能不能这样……需要通过链表来逐一查找每个commit的P列表
         for (Map.Entry<Integer, String> entry : curBranComList.descendingMap().entrySet()) {
             String thisCommit = entry.getValue();
             if (Branch.containValue(mergedBranComList, thisCommit)) {

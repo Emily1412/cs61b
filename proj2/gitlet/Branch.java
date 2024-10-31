@@ -53,6 +53,9 @@ public class Branch implements Serializable {
         }
         saveBranch();
     }
+    public void  addCommitMap(TreeMap<Integer, String> commits) {
+        commitsList.putAll(commits);
+    }
     public void addCommit(String commitName) {
         //一定记得检查是否为空！！如果为空调用lastKey()会异常
         if (commitsList.isEmpty()) {
