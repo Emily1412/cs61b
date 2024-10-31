@@ -850,9 +850,7 @@ public class Repository {
                     }
                 }
             }
-        }
-        //还有情况7 只有ancestor有 还是无事发生 不用写
-        //需要保存这个blobmap吗
+        }//还有情况7 只有ancestor有 还是无事发生 不用写
         return clonedMap;
     }
 
