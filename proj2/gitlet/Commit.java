@@ -300,6 +300,9 @@ public class Commit implements Serializable {
         return null; // 没有找到公共祖先
     }
 
+
+
+
     /**
      * 根据SHA1获取对应的Commit对象
      * @param sha1 Commit的SHA1值

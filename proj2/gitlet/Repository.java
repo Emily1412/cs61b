@@ -755,15 +755,22 @@ public class Repository {
         //创建一个新的commit!
         String msg = "Merged " + branchName + " into " + currentBranch + ".";
         Instant time = Instant.now();
-        String[] parent = {getHead(), branchName};
+        String mergedBranHeadCom = Branch.getBranchHeadCommit(branchName);
+        String[] parent = {getHead(), mergedBranHeadCom};
         Commit newCommit = new Commit(msg, time, blobs, parent);
+        //保存！并得到sha1
         String newHead = newCommit.saveCommit();
+        //清空暂存区
         File adtFile = join(ADDITIONS_FOLDER, "additionTreeMap");
         Addition adt = readObject(adtFile, Addition.class);
         adt.clearAdditionArea();
         File rmvalFile = join(REMOVAL_FOLDER, "removalTreeMap");
         Removal rmval = readObject(rmvalFile, Removal.class);
         rmval.clearRemovalArea();
+        //要更新当前branch的commit
+        File f = join(BRANCH_FOLDER, currentBranch);
+        Branch cBranch = readObject(f, Branch.class);
+        cBranch.addCommit(newHead);
         saveHead(newHead);
     }
     public static TreeMap<String, String> mergeHelper(String curComHead,
@@ -845,6 +852,7 @@ public class Repository {
             }
         }
         //还有情况7 只有ancestor有 还是无事发生 不用写
+        //需要保存这个blobmap吗
         return clonedMap;
     }
 
